@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Shuffle, SmilePlus, X } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { Popover } from '@/components/ui/Popover';
@@ -25,7 +26,13 @@ interface Props {
  * should ever be.
  */
 export function PageHeader({ pageId, onExitDown, compact }: Props) {
-  const page = useWorkspace((s) => s.pages[pageId]);
+  // select only header fields: the body's `doc` changes on every keystroke
+  const page = useWorkspace(
+    useShallow((s) => {
+      const p = s.pages[pageId];
+      return p ? { title: p.title, icon: p.icon, cover: p.cover, kind: p.kind, createdAt: p.createdAt } : null;
+    }),
+  );
   const updatePage = useWorkspace((s) => s.updatePage);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const [iconAnchor, setIconAnchor] = useState<HTMLElement | null>(null);

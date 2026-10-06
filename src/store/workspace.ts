@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useShallow } from 'zustand/react/shallow';
 import { nanoid } from 'nanoid';
 import { idbStorage } from './idbStorage';
 import type {
@@ -242,3 +243,17 @@ export function ancestry(pages: Record<ID, Page>, id: ID): Page[] {
 }
 
 export const displayTitle = (p: Pick<Page, 'title' | 'kind'>) => p.title.trim() || untitled[p.kind];
+
+/**
+ * Subscribe to just what's needed to *label* a page (title, kind, icon).
+ * Typing in a document changes its `doc` on every keystroke; components that
+ * only show the page's name shouldn't re-render for that.
+ */
+export function usePageLabel(id: ID | null | undefined) {
+  return useWorkspace(
+    useShallow((s) => {
+      const p = id ? s.pages[id] : undefined;
+      return p ? { id: p.id, title: p.title, kind: p.kind, icon: p.icon, favorite: p.favorite } : null;
+    }),
+  );
+}

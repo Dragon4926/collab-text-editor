@@ -17,7 +17,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { displayTitle, useWorkspace } from '@/store/workspace';
+import { displayTitle, usePageLabel, useWorkspace } from '@/store/workspace';
 import type { PageKind, ThemePref } from '@/store/types';
 import { TrafficLights } from '@/components/shell/TrafficLights';
 import { IconButton } from '@/components/ui/IconButton';
@@ -112,7 +112,6 @@ function Favorites() {
         .map((p) => p.id),
     ),
   );
-  const pages = useWorkspace((s) => s.pages);
   const activeId = useWorkspace((s) => s.activeId);
   const setActive = useWorkspace((s) => s.setActive);
   if (favs.length === 0) return null;
@@ -121,8 +120,7 @@ function Favorites() {
       {favs.map((id) => (
         <div key={id} className={`tree-row ${activeId === id ? 'is-active' : ''}`} style={{ paddingLeft: 8 }} onClick={() => setActive(id)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setActive(id)}>
           <span className="tree-row__chevron is-empty" />
-          <PageIcon page={pages[id]} size={15} className="tree-row__icon" />
-          <span className="tree-row__title">{displayTitle(pages[id])}</span>
+          <RowLabel id={id} />
         </div>
       ))}
     </Section>
@@ -138,7 +136,6 @@ function Trash() {
         .map((p) => p.id),
     ),
   );
-  const pages = useWorkspace((s) => s.pages);
   const restorePage = useWorkspace((s) => s.restorePage);
   const deleteForever = useWorkspace((s) => s.deleteForever);
   if (trashed.length === 0) return null;
@@ -147,7 +144,7 @@ function Trash() {
       {trashed.map((id) => (
         <div key={id} className="tree-row is-trashed" style={{ paddingLeft: 8 }}>
           <Trash2 width={14} height={14} className="tree-row__icon" />
-          <span className="tree-row__title">{displayTitle(pages[id])}</span>
+          <RowLabel id={id} icon={false} />
           <span className="tree-row__actions is-visible">
             <button type="button" className="tree-row__action" aria-label="Restore" title="Restore" onClick={() => restorePage(id)}>
               <RotateCcw width={13} height={13} />
@@ -185,5 +182,16 @@ function ThemeSwitch() {
         </button>
       ))}
     </div>
+  );
+}
+
+function RowLabel({ id, icon = true }: { id: string; icon?: boolean }) {
+  const page = usePageLabel(id);
+  if (!page) return null;
+  return (
+    <>
+      {icon && <PageIcon page={page} size={15} className="tree-row__icon" />}
+      <span className="tree-row__title">{displayTitle(page)}</span>
+    </>
   );
 }
