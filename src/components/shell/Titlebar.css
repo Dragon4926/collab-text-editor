@@ -1,0 +1,87 @@
+.titlebar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--titlebar-h);
+  padding: 0 12px 0 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-paper) 82%, transparent);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  user-select: none;
+}
+
+.titlebar__lead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titlebar__crumbs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--c-text-3);
+}
+.titlebar__crumb {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.titlebar__crumb button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 4px 6px;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+.titlebar__crumb button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.titlebar__crumb button:hover {
+  background: var(--c-fill-hover);
+  color: var(--c-text);
+}
+.titlebar__crumb button[aria-current='page'] {
+  color: var(--c-text);
+  font-weight: 600;
+}
+.titlebar__sep {
+  color: var(--c-text-4);
+  flex-shrink: 0;
+}
+.titlebar__kind {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-fill);
+  font-size: var(--text-xs);
+  color: var(--c-text-4);
+  white-space: nowrap;
+}
+
+.titlebar__tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.titlebar__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+@media (max-width: 640px) {
+  .titlebar__kind {
+    display: none;
+  }
+}
