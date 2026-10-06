@@ -1,11 +1,20 @@
+import { lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkspace } from '@/store/workspace';
 import { pageFade } from '@/lib/motion';
 import { Home } from '@/features/home/Home';
-import { DocPage } from '@/features/doc/DocPage';
-import { NotebookPage } from '@/features/notebook/NotebookPage';
-import { SpacePage } from '@/features/space/SpacePage';
-import { BoardPage } from '@/features/board/BoardPage';
+
+/**
+ * Code splitting: each surface is loaded on demand with `React.lazy` +
+ * dynamic `import()`. Vite turns every dynamic import into a separate chunk,
+ * so the editor (TipTap + syntax highlighting) isn't downloaded until you
+ * open a document, and the canvas code isn't downloaded until you open a
+ * canvas. `Suspense` shows a fallback while a chunk loads.
+ */
+const DocPage = lazy(() => import('@/features/doc/DocPage').then((m) => ({ default: m.DocPage })));
+const NotebookPage = lazy(() => import('@/features/notebook/NotebookPage').then((m) => ({ default: m.NotebookPage })));
+const SpacePage = lazy(() => import('@/features/space/SpacePage').then((m) => ({ default: m.SpacePage })));
+const BoardPage = lazy(() => import('@/features/board/BoardPage').then((m) => ({ default: m.BoardPage })));
 import './PageView.css';
 
 /**
@@ -22,7 +31,13 @@ export function PageView() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div key={activeId ?? 'home'} className="page-view" variants={pageFade} initial="initial" animate="animate" exit="exit">
-        {!activeId || !kind ? <Home /> : <Surface id={activeId} kind={kind} />}
+        {!activeId || !kind ? (
+          <Home />
+        ) : (
+          <Suspense fallback={<div className="page-view__loading" aria-label="Loading" />}>
+            <Surface id={activeId} kind={kind} />
+          </Suspense>
+        )}
       </motion.div>
     </AnimatePresence>
   );
