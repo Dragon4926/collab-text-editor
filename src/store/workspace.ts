@@ -67,8 +67,9 @@ export interface WorkspaceState {
   markSeeded: () => void;
 }
 
-const titles: Record<PageKind, string> = {
-  doc: '',
+/** fallback names shown while a page has no title */
+const untitled: Record<PageKind, string> = {
+  doc: 'Untitled',
   space: 'Untitled space',
   board: 'Untitled board',
   notebook: 'Untitled notebook',
@@ -102,7 +103,7 @@ export const useWorkspace = create<WorkspaceState>()(
           s.pages[id] = {
             id,
             kind,
-            title: titles[kind],
+            title: '',
             icon: null,
             cover: null,
             parentId,
@@ -240,5 +241,4 @@ export function ancestry(pages: Record<ID, Page>, id: ID): Page[] {
   return out;
 }
 
-export const displayTitle = (p: Pick<Page, 'title' | 'kind'>) =>
-  p.title.trim() || (p.kind === 'doc' ? 'Untitled' : titles[p.kind]);
+export const displayTitle = (p: Pick<Page, 'title' | 'kind'>) => p.title.trim() || untitled[p.kind];
