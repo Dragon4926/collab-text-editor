@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import type { InkPoint, Stroke } from '@/store/types';
 import { hitStroke, strokeBounds, strokeInLasso, translateStroke, unionBounds, type Box } from './geometry';
 import { useInkTool } from './toolStore';
+import { recognizeShape } from './shapes';
 
 interface Options {
   strokes: Stroke[];
@@ -49,7 +50,32 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
     working: Stroke[];
     start: [number, number];
     points: InkPoint[];
-  }>({ kind: null, before: [], working: [], start: [0, 0], points: [] });
+    /** draw-and-hold: where the pen last "settled", and the pending timer */
+    anchor: [number, number];
+    hold?: ReturnType<typeof setTimeout>;
+    snapped: boolean;
+  }>({ kind: null, before: [], working: [], start: [0, 0], points: [], anchor: [0, 0], snapped: false });
+
+  /**
+   * Draw-and-hold. Every time the pen moves more than a couple of units we
+   * restart a 550 ms timer; if it fires, the pen has been still — try to
+   * recognise the stroke as a line, rectangle or ellipse and swap it in.
+   */
+  const armHold = (x: number, y: number) => {
+    const g = gesture.current;
+    if (Math.hypot(x - g.anchor[0], y - g.anchor[1]) < 2.5 && g.hold) return;
+    g.anchor = [x, y];
+    clearTimeout(g.hold);
+    g.hold = setTimeout(() => {
+      if (g.kind !== 'draw' || g.snapped) return;
+      const shape = recognizeShape(g.points);
+      if (!shape) return;
+      g.points = shape.points;
+      g.snapped = true;
+      setLive((l) => (l ? { ...l, points: shape.points } : l));
+      navigator.vibrate?.(8); // a tiny haptic tick where supported
+    }, 550);
+  };
 
   const selectionBox: Box | null = useMemo(() => {
     if (selected.size === 0) return null;
@@ -90,6 +116,8 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
       if (mode === 'draw') {
         g.kind = 'draw';
         g.points = [pt];
+        g.snapped = false;
+        armHold(pt[0], pt[1]);
         const { color, size } = tool.settings[tool.pen];
         setLive({ id: nanoid(8), pen: tool.pen, color, size, points: [pt] });
       } else if (mode === 'erase') {
@@ -124,7 +152,10 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
       const events = native.getCoalescedEvents?.() ?? [native];
 
       if (g.kind === 'draw') {
+        if (g.snapped) return; // the perfected shape stays put until pen-up
         for (const ev of events.length ? events : [native]) g.points.push(pointFrom(ev));
+        const lastPt = g.points[g.points.length - 1];
+        armHold(lastPt[0], lastPt[1]);
         setLive((l) => (l ? { ...l, points: g.points.slice() } : l));
       } else if (g.kind === 'erase') {
         for (const ev of events.length ? events : [native]) {
@@ -147,6 +178,8 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
 
   const onPointerUp = useCallback(() => {
     const g = gesture.current;
+    clearTimeout(g.hold);
+    g.hold = undefined;
     if (g.kind === 'draw' && live) {
       const stroke = { ...live, points: g.points };
       commit([...g.before, stroke], g.before);
