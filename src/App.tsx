@@ -8,6 +8,7 @@ import { Titlebar } from '@/components/shell/Titlebar';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { PageView } from '@/features/page/PageView';
 import { CommandPalette } from '@/features/command/CommandPalette';
+import { Toaster } from '@/components/ui/Toast';
 
 export function App() {
   const hydrated = useHydrated();
@@ -26,6 +27,7 @@ export function App() {
       <Titlebar />
       <PageView />
       <CommandPalette />
+      <Toaster />
     </AppShell>
   );
 }
