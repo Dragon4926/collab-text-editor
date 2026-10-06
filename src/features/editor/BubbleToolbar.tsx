@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useEditorState, type Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
+import { NodeSelection } from '@tiptap/pm/state';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bold, ChevronDown, Code, Highlighter, Italic, Link2, Strikethrough, Underline } from 'lucide-react';
 import { spring } from '@/lib/motion';
@@ -75,7 +76,8 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
     <BubbleMenu
       editor={editor}
       options={{ placement: 'top', offset: 10 }}
-      shouldShow={({ editor: e, from, to }) => from !== to && !e.isActive('codeBlock') && e.isEditable && !e.isActive('image')}
+      // only for text selections — not when a whole block (sketch, image…) is selected
+      shouldShow={({ editor: e, from, to, state }) => from !== to && !(state.selection instanceof NodeSelection) && !e.isActive('codeBlock') && e.isEditable}
       className="bubble"
       onMouseDown={(e) => {
         // keep the selection alive unless the user clicks into the link input
