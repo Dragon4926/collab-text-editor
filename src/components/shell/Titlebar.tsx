@@ -96,7 +96,10 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
 function CurrentTitle({ id }: { id: string }) {
   const page = useWorkspace((s) => s.pages[id]);
   const updatePage = useWorkspace((s) => s.updatePage);
-  const [editing, setEditing] = useState(false);
+  // brand-new canvases start in rename mode, like a new folder in Finder
+  const [editing, setEditing] = useState(
+    () => !!page && !page.title && (page.kind === 'space' || page.kind === 'board') && Date.now() - page.createdAt < 1500,
+  );
   if (!page) return null;
   return editing ? (
     <span className="titlebar__rename">
