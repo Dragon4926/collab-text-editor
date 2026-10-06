@@ -12,11 +12,21 @@ import type { NotebookData, PaperStyle } from '@/store/types';
 export const SHEET_W = 794; // A4 at 96 dpi
 export const SHEET_H = 1123;
 
-export const PAPER_TINTS: Record<NotebookData['tint'], { label: string; bg: string; line: string; margin: string; inkBlack: string }> = {
-  white: { label: 'White', bg: '#ffffff', line: 'rgba(70, 110, 190, 0.2)', margin: 'rgba(229, 72, 77, 0.35)', inkBlack: '#1d1d1f' },
-  ivory: { label: 'Ivory', bg: '#fffcf3', line: 'rgba(120, 100, 60, 0.2)', margin: 'rgba(229, 72, 77, 0.3)', inkBlack: '#1d1d1f' },
-  mint: { label: 'Mint', bg: '#f1faf4', line: 'rgba(40, 130, 90, 0.2)', margin: 'rgba(229, 72, 77, 0.3)', inkBlack: '#1d1d1f' },
-  night: { label: 'Night', bg: '#1f2024', line: 'rgba(255, 255, 255, 0.1)', margin: 'rgba(255, 120, 120, 0.3)', inkBlack: '#f2f2f5' },
+export const PAPER_TINTS: Record<NotebookData['tint'], { label: string; bg: string; line: string; margin: string; inkBlack: string; dark: boolean }> = {
+  white: { label: 'White', bg: '#ffffff', line: 'rgba(70, 110, 190, 0.2)', margin: 'rgba(229, 72, 77, 0.35)', inkBlack: '#1d1d1f', dark: false },
+  ivory: { label: 'Ivory', bg: '#fffcf3', line: 'rgba(120, 100, 60, 0.2)', margin: 'rgba(229, 72, 77, 0.3)', inkBlack: '#1d1d1f', dark: false },
+  mint: { label: 'Mint', bg: '#f1faf4', line: 'rgba(40, 130, 90, 0.2)', margin: 'rgba(229, 72, 77, 0.3)', inkBlack: '#1d1d1f', dark: false },
+  night: { label: 'Night', bg: '#1f2024', line: 'rgba(255, 255, 255, 0.1)', margin: 'rgba(255, 120, 120, 0.3)', inkBlack: '#f2f2f5', dark: true },
+};
+
+/** CSS variables that make ink render correctly on a given paper, in any app theme. */
+export const paperInkVars = (tint: NotebookData['tint']) => {
+  const t = PAPER_TINTS[tint];
+  return {
+    '--ink-black': t.inkBlack,
+    '--hl-blend': t.dark ? 'screen' : 'multiply',
+    '--hl-opacity': t.dark ? 0.8 : 0.38,
+  } as React.CSSProperties;
 };
 
 export const PAPERS: { id: PaperStyle; label: string }[] = [

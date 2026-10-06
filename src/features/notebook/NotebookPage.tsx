@@ -12,7 +12,7 @@ import { InkToolbar } from '@/features/ink/InkToolbar';
 import { useInkTool } from '@/features/ink/toolStore';
 import { riseIn, spring, stagger } from '@/lib/motion';
 import { PageHeader } from '@/features/page/PageHeader';
-import { PAPERS, PAPER_TINTS, PaperPattern, SHEET_H, SHEET_W } from './paper';
+import { PAPERS, PAPER_TINTS, PaperPattern, SHEET_H, SHEET_W, paperInkVars } from './paper';
 import './Notebook.css';
 
 /**
@@ -96,7 +96,6 @@ export function NotebookPage({ pageId }: { pageId: ID }) {
     setSheets(notebook.sheets.filter((s) => s.id !== id));
   };
 
-  const tint = PAPER_TINTS[notebook.tint];
 
   return (
     <div className="notebook">
@@ -128,7 +127,7 @@ export function NotebookPage({ pageId }: { pageId: ID }) {
                   width={SHEET_W}
                   height={SHEET_H}
                   className="notebook__ink"
-                  style={{ '--ink-black': tint.inkBlack } as React.CSSProperties}
+                  style={paperInkVars(notebook.tint)}
                   underlay={<PaperPattern style={notebook.paper} tint={notebook.tint} id={`paper-${sheet.id}`} />}
                 />
                 <footer className="notebook__sheet-foot">

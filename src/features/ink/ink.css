@@ -21,11 +21,24 @@
 .ink-stroke {
   transition: opacity var(--dur-fast);
 }
-.ink-stroke--hl {
-  mix-blend-mode: multiply;
+/*
+ * Highlighters depend on what they're drawn ON, not on the app theme:
+ * on light paper they multiply (darkening ink shows through), on dark
+ * surfaces multiply would make them vanish, so they *screen* (lighten)
+ * instead, at higher opacity so the colour stays vivid rather than muddy. Surfaces set these two variables; dark mode flips the
+ * default, and a notebook sheet of light paper flips it back.
+ */
+:root {
+  --hl-blend: multiply;
+  --hl-opacity: 0.38;
 }
-:root[data-theme='dark'] .ink-stroke--hl {
-  mix-blend-mode: screen;
+:root[data-theme='dark'] {
+  --hl-blend: screen;
+  --hl-opacity: 0.8;
+}
+.ink-stroke--hl {
+  mix-blend-mode: var(--hl-blend);
+  opacity: var(--hl-opacity); /* CSS beats the SVG opacity attribute */
 }
 .ink-stroke.is-selected {
   filter: drop-shadow(0 0 2px var(--c-accent));
