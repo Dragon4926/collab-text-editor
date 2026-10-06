@@ -27,6 +27,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^1.52.0",
     "nanoid": "^6.0.2",
+    "perfect-freehand": "^1.2.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zustand": "^5.0.15"
