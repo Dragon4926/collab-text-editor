@@ -115,6 +115,6 @@ detail* at different scales.
 
 ## Try it
 
-1. Add **zoom-to-selection** (`⌘2`): `fitBounds` over the selected cards.
+1. Add **zoom-to-selection** (`Ctrl+2`): `fitBounds` over the selected cards.
 2. Clamp panning so the content can't be scrolled entirely out of view.
 3. Add inertia: after a drag-pan ends, keep moving with decaying velocity.

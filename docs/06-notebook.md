@@ -54,7 +54,7 @@ paper even in dark mode and turns light on "night" paper.
 
 ### Notebook-wide undo
 
-Each sheet is its own `InkSurface`, but ⌘Z should undo your *last action*
+Each sheet is its own `InkSurface`, but Ctrl+Z should undo your *last action*
 wherever it happened. `NotebookPage` therefore keeps one history of the whole
 `sheets` array: every commit from any sheet records a snapshot of all sheets
 first (once per gesture, using the same `lastBefore` trick as chapter 05).

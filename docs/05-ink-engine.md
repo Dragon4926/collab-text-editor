@@ -117,7 +117,7 @@ A stroke is selected when more than 60% of its points are inside the lasso
 ### 7. One gesture, one undo step
 
 An eraser swipe may remove ten strokes over 200 pointer moves. We want *one*
-⌘Z to bring them all back. `useInkCapture` calls `commit(next, before)` where
+Ctrl+Z to bring them all back. `useInkCapture` calls `commit(next, before)` where
 `before` is the state at the start of the gesture; `useInkDocument` records
 `before` in history only the first time it sees that reference.
 

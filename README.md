@@ -25,11 +25,12 @@ Lumen combines four ways of thinking in one local-first app:
 ## Highlights
 
 - **Mac-native feel** — frosted-glass sidebar over a drifting aurora, traffic-light window controls, SF typography, springy motion and a full dark mode ("graphite glass").
+- **Blur-into-focus motion** — menus, popovers, pages and toasts materialise from a soft blur the way macOS and iOS do; light/dark cross-fades through a blurred view transition.
 - **Block editor** — `/` slash menu, Markdown shortcuts, floating formatting HUD, highlights in five colours, callouts, syntax-highlighted code, task lists, images (paste/drop), live sub-page links.
 - **Ink everywhere** — fountain pen, ballpoint, pencil (with grain), marker and highlighter; per-pen colour and size memory; stroke eraser; lasso to move, recolour and duplicate; **draw-and-hold** to snap to a perfect line, rectangle or ellipse; palm rejection once a stylus is detected.
 - **Voice memos** — record straight into a note with a live waveform; scrub and play back at 1×, 1.5× or 2×.
 - **Spatial canvas** — pan, pinch and zoom-at-cursor; marquee selection; frames that carry their contents; connectors; minimap; semantic zoom; drag pages in from the sidebar.
-- **⌘K command palette** — fuzzy search across titles *and* body text, plus every app action.
+- **Ctrl+K command palette** — fuzzy search across titles *and* body text, plus every app action.
 - **Local-first** — everything is stored in IndexedDB on your device. Export Markdown, SVG, PNG, or a full JSON backup.
 
 ## Getting started
@@ -80,7 +81,7 @@ src/
     canvas/               shared camera + canvas chrome
     space/                the spatial document space
     board/                the whiteboard
-    command/              ⌘K palette
+    command/              Ctrl+K palette
 docs/                     the learning guide (start at docs/README.md)
 ```
 
@@ -98,17 +99,21 @@ document editor, spatial space, ink notebook) — see
 
 ## Keyboard shortcuts
 
+Lumen follows **Windows keyboard conventions**: Ctrl is the command key,
+Ctrl+Y redoes and F2 renames. On a Mac, ⌘ is accepted wherever Ctrl is listed.
+
 | | |
 |---|---|
-| `⌘K` | command palette |
-| `⌥N` | new document |
-| `⌘\` | toggle sidebar |
-| `⌘⇧L` | toggle light / dark |
+| `Ctrl+K` / `Ctrl+P` | command palette |
+| `Alt+N` | new document (browsers reserve `Ctrl+N`) |
+| `F2` | rename the current page |
+| `Ctrl+\` | toggle sidebar |
+| `Ctrl+Shift+L` | toggle light / dark |
+| `Delete` | move the focused sidebar page to the trash |
 | `/` | block menu (in documents) |
-| `Space`-drag, pinch, `⌘`-scroll | pan & zoom canvases |
-| `⌘0` / `⌘1` | 100% / zoom to fit |
+| `Space`-drag, pinch, `Ctrl`+scroll | pan & zoom canvases |
+| `Ctrl+0` / `Ctrl+1` | 100% / zoom to fit |
+| `Ctrl+A` / `Ctrl+D` / `Delete` | select all / duplicate / delete on canvases |
 | `V H N T F S` | space tools |
 | `V H P E R O D A T` | whiteboard tools |
-| `⌘Z` / `⇧⌘Z` | undo / redo on canvases and ink |
-
-`⌘` is `Ctrl` on Windows and Linux.
+| `Ctrl+Z` / `Ctrl+Y` | undo / redo (`Ctrl+Shift+Z` works too) |
