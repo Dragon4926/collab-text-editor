@@ -79,8 +79,11 @@ The result is a continuous, smooth curve that never overshoots.
 ### 4. Painting: opacity, blend modes, texture
 
 * **Highlighter** uses `mix-blend-mode: multiply` — colours *darken* what's
-  underneath instead of covering it, so text stays readable. (In dark mode
-  we switch to `screen`, multiply's mirror image.)
+  underneath instead of covering it, so text stays readable. On a *dark*
+  surface multiply would make it vanish, so there it uses `screen`
+  (multiply's mirror image) at higher opacity. The choice depends on the
+  surface, not the app theme — light notebook paper in dark mode still
+  multiplies — so surfaces set `--hl-blend` and `--hl-opacity` CSS variables.
 * **Pencil** gets an SVG filter: `feTurbulence` makes fractal noise and
   `feDisplacementMap` nudges the stroke's edge pixels by it → graphite grain.
 * **Black ink** is rendered through the `--ink-black` CSS variable, which

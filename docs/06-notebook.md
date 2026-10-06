@@ -49,8 +49,9 @@ tile, fill a rectangle with it, and SVG repeats it.
 Because paper lives in the same SVG as the ink, the paper picker's
 thumbnails are just the same component at a small size.
 
-Each sheet sets `--ink-black` from its tint, so black ink stays dark on ivory
-paper even in dark mode and turns light on "night" paper.
+Each sheet sets its ink variables from its tint (`paperInkVars`): black ink
+stays dark on ivory paper even in dark mode and turns light on "night" paper,
+and the highlighter multiplies on light paper but screens on night paper.
 
 ### Notebook-wide undo
 

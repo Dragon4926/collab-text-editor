@@ -20,7 +20,10 @@ only when you open a document; canvas code only when you open a canvas.
 | entry chunk | ~1.2 MB | ~270 kB |
 
 `Suspense` shows a spinner while a chunk loads — but only after 250 ms
-(CSS `animation-delay`), so fast loads show nothing at all.
+(CSS `animation-delay`), so fast loads show nothing at all. Once the app is
+idle, `preloadSurfaces()` fetches the remaining chunks in the background
+(`requestIdleCallback`), so the first visit to a canvas doesn't wait on the
+network in the middle of a page transition.
 
 ## Render less: selectors and memo
 
@@ -35,11 +38,19 @@ only when you open a document; canvas code only when you open a canvas.
   stroke #500 doesn't recompute strokes #1–499.
 * **TipTap's `useEditorState`** re-renders the toolbar only when the
   *selected* editor state changes.
+* **Label-only subscriptions.** A document's `doc` changes on every
+  keystroke, so the titlebar breadcrumbs, favourites, trash and page header
+  select only what they display (`usePageLabel(id)` returns title, kind and
+  icon with shallow comparison). Typing re-renders the editor, not the
+  window chrome.
 
-## Write less: debounced persistence
+## Write less: debounced persistence without JSON
 
-The store changes on every keystroke and every pointer move; IndexedDB is
-written at most once per 400 ms of quiet (chapter 03). The canvas camera
+The store changes on every keystroke and every pointer move. Our IndexedDB
+storage keeps the latest state *object* (no `JSON.stringify` per change —
+zustand's default JSON storage did that 60 times a second while dragging) and
+writes at most once per 400 ms of quiet, letting IndexedDB's structured clone
+do the copying (chapter 03). The canvas camera
 persists only after it settles. Gesture history records one snapshot per
 gesture, not per move.
 
@@ -57,6 +68,8 @@ is shared with the previous state. That's why:
   compositor does the work, nothing re-lays out.
 * The dot grid is a CSS background (no elements).
 * The aurora animates only `transform` on blurred layers that never repaint.
+* Blur transitions end by removing `filter` entirely, so finished elements
+  drop their extra compositing layer.
 * `will-change: transform` hints the browser to keep those layers on the GPU.
 
 ## Store less: images and blobs

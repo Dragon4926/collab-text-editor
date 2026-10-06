@@ -26,8 +26,8 @@ export function App() {
   if (!hydrated) return null;
 
   return (
-    // reducedMotion="user": framer-motion skips transform/blur animations
-    // (keeping opacity fades) when the OS asks for reduced motion
+    // reducedMotion="user": when the OS asks for reduced motion, framer-motion
+    // skips movement (transform/layout animations) and keeps gentle fades
     <MotionConfig reducedMotion="user">
       <AppShell sidebar={<Sidebar />}>
         <Titlebar />
