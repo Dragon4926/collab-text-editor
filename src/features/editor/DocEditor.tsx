@@ -3,6 +3,7 @@ import { EditorContent, useEditor, type Editor } from '@tiptap/react';
 import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { createExtensions } from './extensions';
+import { SlashMenu } from './SlashMenu';
 import './editor.css';
 
 interface Props {
@@ -52,5 +53,10 @@ export function DocEditor({ pageId, onReady }: Props) {
     if (editor && onReady) onReady(editor);
   }, [editor, onReady]);
 
-  return <EditorContent editor={editor} className="doc-editor" />;
+  return (
+    <>
+      <EditorContent editor={editor} className="doc-editor" />
+      <SlashMenu />
+    </>
+  );
 }

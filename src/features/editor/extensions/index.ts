@@ -4,6 +4,7 @@ import { Placeholder } from '@tiptap/extensions';
 import { TaskItem, TaskList } from '@tiptap/extension-list';
 import Highlight from '@tiptap/extension-highlight';
 import Typography from '@tiptap/extension-typography';
+import { SlashCommand } from './SlashCommand';
 
 /**
  * The editor's schema is the sum of its extensions. Each extension
@@ -29,5 +30,6 @@ export function createExtensions(): Extensions {
     Highlight.configure({ multicolor: true }),
     // smart quotes, em-dashes, arrows (->), ellipses…
     Typography,
+    SlashCommand,
   ];
 }
