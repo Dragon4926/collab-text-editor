@@ -17,14 +17,15 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { displayTitle, useWorkspace } from '@/store/workspace';
+import { displayTitle, usePageLabel, useWorkspace } from '@/store/workspace';
 import type { PageKind, ThemePref } from '@/store/types';
 import { TrafficLights } from '@/components/shell/TrafficLights';
 import { IconButton } from '@/components/ui/IconButton';
 import { Kbd } from '@/components/ui/Kbd';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
+import { changeTheme } from '@/lib/theme';
 import { PageTree } from './PageTree';
 import './Sidebar.css';
 
@@ -38,7 +39,7 @@ export function Sidebar() {
   const create = (kind: PageKind) => setActive(createPage(kind));
 
   const newItems: MenuItem[] = [
-    { label: 'Document', icon: <FileText />, shortcut: 'Mod+N', onSelect: () => create('doc') },
+    { label: 'Document', icon: <FileText />, shortcut: 'Alt+N', onSelect: () => create('doc') },
     { label: 'Spatial space', icon: <Orbit />, onSelect: () => create('space') },
     { label: 'Whiteboard', icon: <Shapes />, onSelect: () => create('board') },
     { label: 'Notebook', icon: <NotebookPen />, onSelect: () => create('notebook') },
@@ -95,7 +96,13 @@ function Section({ title, action, children, defaultOpen = true }: { title: strin
       </div>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={spring.smooth} style={{ overflow: 'hidden' }}>
+          <motion.div
+            initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+            animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+            exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+            transition={withFocus(spring.smooth)}
+            style={{ overflow: 'hidden' }}
+          >
             {children}
           </motion.div>
         )}
@@ -112,7 +119,6 @@ function Favorites() {
         .map((p) => p.id),
     ),
   );
-  const pages = useWorkspace((s) => s.pages);
   const activeId = useWorkspace((s) => s.activeId);
   const setActive = useWorkspace((s) => s.setActive);
   if (favs.length === 0) return null;
@@ -121,8 +127,7 @@ function Favorites() {
       {favs.map((id) => (
         <div key={id} className={`tree-row ${activeId === id ? 'is-active' : ''}`} style={{ paddingLeft: 8 }} onClick={() => setActive(id)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setActive(id)}>
           <span className="tree-row__chevron is-empty" />
-          <PageIcon page={pages[id]} size={15} className="tree-row__icon" />
-          <span className="tree-row__title">{displayTitle(pages[id])}</span>
+          <RowLabel id={id} />
         </div>
       ))}
     </Section>
@@ -138,7 +143,6 @@ function Trash() {
         .map((p) => p.id),
     ),
   );
-  const pages = useWorkspace((s) => s.pages);
   const restorePage = useWorkspace((s) => s.restorePage);
   const deleteForever = useWorkspace((s) => s.deleteForever);
   if (trashed.length === 0) return null;
@@ -147,7 +151,7 @@ function Trash() {
       {trashed.map((id) => (
         <div key={id} className="tree-row is-trashed" style={{ paddingLeft: 8 }}>
           <Trash2 width={14} height={14} className="tree-row__icon" />
-          <span className="tree-row__title">{displayTitle(pages[id])}</span>
+          <RowLabel id={id} icon={false} />
           <span className="tree-row__actions is-visible">
             <button type="button" className="tree-row__action" aria-label="Restore" title="Restore" onClick={() => restorePage(id)}>
               <RotateCcw width={13} height={13} />
@@ -175,15 +179,25 @@ const THEMES: { value: ThemePref; label: string; Icon: typeof Sun }[] = [
  */
 function ThemeSwitch() {
   const theme = useWorkspace((s) => s.theme);
-  const setTheme = useWorkspace((s) => s.setTheme);
   return (
     <div className="segmented" role="radiogroup" aria-label="Appearance">
       {THEMES.map(({ value, label, Icon }) => (
-        <button key={value} type="button" role="radio" aria-checked={theme === value} aria-label={label} title={label} className="segmented__btn" onClick={() => setTheme(value)}>
+        <button key={value} type="button" role="radio" aria-checked={theme === value} aria-label={label} title={label} className="segmented__btn" onClick={() => changeTheme(value)}>
           {theme === value && <motion.span layoutId="theme-pill" className="segmented__pill" transition={spring.snappy} />}
           <Icon width={14} height={14} />
         </button>
       ))}
     </div>
+  );
+}
+
+function RowLabel({ id, icon = true }: { id: string; icon?: boolean }) {
+  const page = usePageLabel(id);
+  if (!page) return null;
+  return (
+    <>
+      {icon && <PageIcon page={page} size={15} className="tree-row__icon" />}
+      <span className="tree-row__title">{displayTitle(page)}</span>
+    </>
   );
 }

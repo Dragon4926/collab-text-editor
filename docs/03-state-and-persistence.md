@@ -58,27 +58,42 @@ state where changed branches are copied and unchanged branches are **shared**
 with the old state (structural sharing). That sharing is what makes cheap
 undo history possible (chapter 05).
 
-### Persistence: IndexedDB, debounced
+### Persistence: IndexedDB, structured objects, debounced
 
-The `persist` middleware serialises state after each change and restores it
-on startup. We point it at a custom storage, `src/store/idbStorage.ts`:
+The `persist` middleware hands the state to a storage after each change and
+restores it on startup. We give it our own storage, `src/store/idbStorage.ts`:
 
 * **IndexedDB, not localStorage.** localStorage is synchronous (blocks the
   main thread) and capped at ~5 MB. IndexedDB is asynchronous and can store
   hundreds of MB.
-* **Debounced writes.** The editor updates the store on every keystroke.
-  Serialising the whole workspace that often is waste — only the last state
-  matters. `setItem` waits until writes have been quiet for 400 ms:
+* **Objects, not JSON.** zustand's ready-made `createJSONStorage` calls
+  `JSON.stringify` on the whole state on *every* change — before any
+  debouncing can help. Dragging a card fires ~60 changes a second; with images
+  in the workspace that serialisation alone causes stutter. IndexedDB stores
+  objects natively using the *structured clone* algorithm, so our storage
+  simply remembers the latest value object (free) and lets IndexedDB clone it
+  once, when it actually writes.
+* **Debounced writes.** That write happens only after changes have been quiet
+  for 400 ms:
 
   ```
-  keystrokes:  x x x x x          x x
-  writes:                 ▲(400ms)      ▲
+  changes:  x x x x x          x x
+  writes:              ▲(400ms)      ▲
   ```
 
 * **Flush on hide.** When the tab becomes hidden (`visibilitychange`) a
   pending write is flushed immediately, because the page may be closed next.
 * **`partialize`** excludes transient UI state (is the palette open?) from
   what's saved.
+
+### Migrations
+
+Saved data outlives the code that wrote it. The persist options carry a
+`version` and a `migrate(persisted, oldVersion)` function. Version 2, for
+example, rewrote the seeded "Keyboard shortcuts" page when Lumen switched
+from Mac (⌘) to Windows (Ctrl) notation — users who already had the old page
+get the new one, while their own pages are untouched. The storage also still
+accepts the JSON strings written by version 1.
 
 ### Hydration
 
@@ -119,9 +134,10 @@ ink is *generated* from parametric curves — a wave is `y = sin(x)`, a spiral i
 ## Try it
 
 1. Open devtools → Application → IndexedDB → `keyval-store` and watch the
-   `lumen-workspace` entry update ~400 ms after you stop typing.
-2. Change `DELAY` in `idbStorage.ts` to `0`, then type quickly with the
-   Performance panel recording. Compare the scripting time.
+   `lumen-workspace` entry update ~400 ms after you stop typing. Notice it's
+   an object you can expand, not a string.
+2. Swap `storage: idbStorage()` for `createJSONStorage(() => …)` and drag a
+   card around with the Performance panel recording. Find `JSON.stringify`.
 3. Add a `tags: string[]` field to `Page` and a "Tags" section in the sidebar.
    Bump the persist `version` and write a `migrate` function that adds
    `tags: []` to old pages.

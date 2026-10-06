@@ -15,11 +15,13 @@ import { PAPER_TINTS, SHEET_H, SHEET_W } from '@/features/notebook/paper';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-function strokeSvg(s: Stroke, black = '#1d1d1f') {
+function strokeSvg(s: Stroke, black = '#1d1d1f', darkPaper = false) {
   const pen = PENS[s.pen];
   const fill = s.color.toLowerCase() === '#1d1d1f' ? black : s.color;
-  const blend = pen.blend === 'multiply' ? ' style="mix-blend-mode:multiply"' : '';
-  return `<path d="${strokePath(s)}" fill="${fill}" opacity="${pen.opacity}"${blend}/>`;
+  const hl = pen.blend === 'multiply';
+  const blend = hl ? ` style="mix-blend-mode:${darkPaper ? 'screen' : 'multiply'}"` : '';
+  const opacity = hl && darkPaper ? 0.8 : pen.opacity;
+  return `<path d="${strokePath(s)}" fill="${fill}" opacity="${opacity}"${blend}/>`;
 }
 
 export function notebookSvg(nb: NotebookData): string {
@@ -27,7 +29,7 @@ export function notebookSvg(nb: NotebookData): string {
   const gap = 40;
   const h = nb.sheets.length * SHEET_H + (nb.sheets.length - 1) * gap;
   const sheets = nb.sheets
-    .map((sheet, i) => `<g transform="translate(0 ${i * (SHEET_H + gap)})"><rect width="${SHEET_W}" height="${SHEET_H}" fill="${tint.bg}"/>${sheet.strokes.map((s) => strokeSvg(s, tint.inkBlack)).join('')}</g>`)
+    .map((sheet, i) => `<g transform="translate(0 ${i * (SHEET_H + gap)})"><rect width="${SHEET_W}" height="${SHEET_H}" fill="${tint.bg}"/>${sheet.strokes.map((s) => strokeSvg(s, tint.inkBlack, tint.dark)).join('')}</g>`)
     .join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SHEET_W} ${h}" width="${SHEET_W}" height="${h}">${sheets}</svg>`;
 }

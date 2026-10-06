@@ -369,7 +369,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-md), var(--shadow-hairline);
+  box-shadow:
+    var(--shadow-md), var(--shadow-hairline),
+    var(--glass-edge);
   cursor: pointer;
 }
 .minimap__card {

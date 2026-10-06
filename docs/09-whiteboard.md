@@ -72,7 +72,7 @@ the zoom keeps them constant on screen:
 
 While dragging, a `draft` element is rendered but not stored. On release it
 is normalised (negative width/height from dragging up-left become positive),
-committed as one undo step, and selected. Holding ⇧ constrains to a square or
+committed as one undo step, and selected. Holding Shift constrains to a square or
 circle.
 
 ### Arrowheads by hand

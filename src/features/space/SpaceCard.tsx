@@ -8,7 +8,7 @@ import { COVERS } from '@/features/page/covers';
 import { InkSurface } from '@/features/ink/InkSurface';
 import { InkLayer } from '@/features/ink/InkLayer';
 import { docToText } from '@/lib/text';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 
 export interface CardHandlers {
   onCardPointerDown: (e: React.PointerEvent, card: Card) => void;
@@ -39,9 +39,9 @@ export const SpaceCardView = memo(function SpaceCardView(props: Props) {
     <motion.div
       className={`space-card space-card--${card.type} ${card.color ? `note--${card.color}` : ''} ${selected ? 'is-selected' : ''} ${editing ? 'is-editing' : ''}`}
       style={{ left: card.x, top: card.y, width: card.w, height: card.h, zIndex: card.type === 'frame' ? 0 : card.z, rotate: card.type === 'note' ? card.tilt ?? 0 : 0 }}
-      initial={{ scale: 0.6, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={spring.bouncy}
+      initial={{ scale: 0.7, opacity: 0, filter: 'blur(10px)' }}
+      animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+      transition={withFocus(spring.bouncy)}
       onPointerDown={(e) => onCardPointerDown(e, card)}
       onDoubleClick={(e) => {
         e.stopPropagation();

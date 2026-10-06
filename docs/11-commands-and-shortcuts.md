@@ -2,8 +2,9 @@
 
 ## What you see
 
-Press **⌘K** anywhere: a glass panel drops in, you type a few letters, and it
-finds pages by title *or* by words inside them (with a snippet), plus actions
+Press **Ctrl+K** (or Ctrl+P) anywhere: the app behind softly blurs, a glass
+panel comes into focus, you type a few letters, and it finds pages by title
+*or* by words inside them (with a snippet), plus actions
 like "New whiteboard", "Switch to dark appearance" or "Export workspace
 backup". Arrow keys move a sliding highlight; Enter runs it.
 
@@ -28,7 +29,17 @@ Then it rewards the matches people mean:
 * a big bonus for a plain substring, bigger for a prefix.
 
 Body-text matches score lower than title matches and show a snippet around
-the hit. Page results come first, then actions.
+the hit. Whichever section — pages or actions — holds the best-scoring match
+is listed first, so "new doc" runs *New document* instead of opening a page
+that happens to contain those words.
+
+### A fresh palette every time
+
+The palette animates out with `AnimatePresence`. If you reopen it while that
+exit animation is still running, framer-motion sees a child with the *same
+key* reappear and revives the closing instance — old query and all. Giving
+each opening its own key (a counter bumped whenever `paletteOpen` turns on)
+guarantees a clean slate.
 
 ### Keyboard-first lists
 
@@ -42,23 +53,36 @@ The moving highlight is a shared-`layoutId` element (chapter 10).
 `window`. It reads the store with `getState()` inside the handler instead of
 subscribing, so it never needs to be re-registered.
 
-Surface-specific shortcuts (tools on canvases, ⌘Z) are registered by each
-surface and **ignore keys typed into inputs**:
+Surface-specific shortcuts (tools on canvases, Ctrl+Z) are registered by
+each surface and **ignore keys typed into fields**, through one shared guard
+in `src/lib/keys.ts`:
 
 ```ts
-if (target.closest('input, textarea, [contenteditable="true"]')) return;
+export const isTyping = (target) => !!target?.closest?.('input, textarea, select, [contenteditable="true"]');
 ```
 
-### Platform modifiers
+### Windows keyboard conventions
 
-Mac users expect ⌘, everyone else Ctrl. `src/components/ui/Kbd.tsx` detects
-Apple platforms once and exports:
+Lumen speaks the Windows/Linux keyboard dialect everywhere
+(`src/lib/keys.ts`):
 
-* `isMod(event)` — "is the platform modifier held?"
-* `<Kbd keys="Mod+K" />` — renders `⌘K` or `Ctrl K`.
+| Convention | Lumen |
+|---|---|
+| Ctrl is the command key | `isMod(e)` is `e.ctrlKey` (⌘ is also accepted on Apple keyboards) |
+| Redo is **Ctrl+Y** | `isRedo(e)` accepts Ctrl+Y and Ctrl+Shift+Z on every canvas and ink surface |
+| **F2** renames | renames the current page; documents select their title, canvases open the breadcrumb editor |
+| **Delete** removes | on a focused sidebar row it moves the page to the trash; on canvases it deletes the selection |
+| Shortcuts are written `Ctrl+Shift+Z` | `shortcut('Mod+Shift+Z')` → `"Ctrl+Shift+Z"`, `withShortcut('Undo', 'Mod+Z')` → `"Undo (Ctrl+Z)"` |
 
-Some shortcuts are reserved by browsers (⌘N opens a window), so ⌥N is offered
-as a fallback for "new document".
+`<Kbd keys="Mod+K" />` renders the shortcut as small Windows-style key caps:
+`[Ctrl] [K]`.
+
+F2 is delivered as a window event (`RENAME_EVENT`) rather than through the
+store: it's a momentary command, not state, and whichever component owns the
+title (the document header or the breadcrumb) handles it.
+
+Some shortcuts belong to the browser and can't be overridden — Ctrl+N opens a
+new window — so Alt+N creates a document instead.
 
 ## Try it
 

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { motion } from 'framer-motion';
 import { ChevronRight, Copy, FileDown, ImageDown, MoreHorizontal, PanelLeftOpen, Star, Trash2 } from 'lucide-react';
-import { ancestry, displayTitle, useWorkspace } from '@/store/workspace';
+import { useShallow } from 'zustand/react/shallow';
+import { ancestry, displayTitle, usePageLabel, useWorkspace } from '@/store/workspace';
 import { IconButton } from '@/components/ui/IconButton';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { exportPage } from '@/lib/export/exportPage';
 import { KIND_LABEL, PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { TrafficLights } from './TrafficLights';
 import './Titlebar.css';
 
@@ -18,20 +20,21 @@ import './Titlebar.css';
 export function Titlebar({ children }: { children?: React.ReactNode }) {
   const sidebarOpen = useWorkspace((s) => s.sidebarOpen);
   const setSidebarOpen = useWorkspace((s) => s.setSidebarOpen);
-  const page = useWorkspace((s) => (s.activeId ? s.pages[s.activeId] : undefined));
-  const pages = useWorkspace((s) => s.pages);
+  const activeId = useWorkspace((s) => s.activeId);
+  const page = usePageLabel(activeId);
+  // ids only: the crumbs re-render when the path changes, not on every keystroke
+  const crumbs = useWorkspace(useShallow((s) => (s.activeId ? ancestry(s.pages, s.activeId).map((p) => p.id) : [])));
   const setActive = useWorkspace((s) => s.setActive);
   const toggleFavorite = useWorkspace((s) => s.toggleFavorite);
   const trashPage = useWorkspace((s) => s.trashPage);
   const duplicatePage = useWorkspace((s) => s.duplicatePage);
   const menu = useMenu();
 
-  const crumbs = page ? ancestry(pages, page.id) : [];
 
   return (
     <header className="titlebar">
       {!sidebarOpen && (
-        <motion.div className="titlebar__lead" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={spring.smooth}>
+        <motion.div className="titlebar__lead" initial={{ opacity: 0, x: -8, filter: 'blur(6px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }} transition={withFocus(spring.smooth)}>
           <TrafficLights />
           <IconButton label="Show sidebar" size="sm" onClick={() => setSidebarOpen(true)}>
             <PanelLeftOpen />
@@ -40,17 +43,10 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
       )}
 
       <nav className="titlebar__crumbs" aria-label="Breadcrumb">
-        {crumbs.map((p, i) => (
-          <span key={p.id} className="titlebar__crumb">
+        {crumbs.map((id, i) => (
+          <span key={id} className="titlebar__crumb">
             {i > 0 && <ChevronRight width={12} height={12} className="titlebar__sep" />}
-            {i === crumbs.length - 1 ? (
-              <CurrentTitle id={p.id} />
-            ) : (
-              <button type="button" onClick={() => setActive(p.id)}>
-                <PageIcon page={p} size={14} />
-                <span>{displayTitle(p)}</span>
-              </button>
-            )}
+            {i === crumbs.length - 1 ? <CurrentTitle id={id} /> : <Crumb id={id} onOpen={setActive} />}
           </span>
         ))}
         {page && <span className="titlebar__kind">{KIND_LABEL[page.kind]}</span>}
@@ -95,6 +91,17 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
  * The current page's crumb doubles as a rename field (click to edit), which
  * is how canvases — which have no big header — get their titles.
  */
+function Crumb({ id, onOpen }: { id: string; onOpen: (id: string) => void }) {
+  const page = usePageLabel(id);
+  if (!page) return null;
+  return (
+    <button type="button" onClick={() => onOpen(id)}>
+      <PageIcon page={page} size={14} />
+      <span>{displayTitle(page)}</span>
+    </button>
+  );
+}
+
 function CurrentTitle({ id }: { id: string }) {
   const page = useWorkspace((s) => s.pages[id]);
   const updatePage = useWorkspace((s) => s.updatePage);
@@ -102,6 +109,12 @@ function CurrentTitle({ id }: { id: string }) {
   const [editing, setEditing] = useState(
     () => !!page && !page.title && (page.kind === 'space' || page.kind === 'board') && Date.now() - page.createdAt < 1500,
   );
+  useEffect(() => {
+    // documents rename in their big header; everything else renames here
+    const onRename = () => useWorkspace.getState().pages[id]?.kind !== 'doc' && setEditing(true);
+    window.addEventListener(RENAME_EVENT, onRename);
+    return () => window.removeEventListener(RENAME_EVENT, onRename);
+  }, [id]);
   if (!page) return null;
   return editing ? (
     <span className="titlebar__rename">
@@ -119,7 +132,7 @@ function CurrentTitle({ id }: { id: string }) {
       />
     </span>
   ) : (
-    <button type="button" aria-current="page" title="Rename" onClick={() => setEditing(true)}>
+    <button type="button" aria-current="page" title="Rename (F2)" onClick={() => setEditing(true)}>
       <PageIcon page={page} size={14} />
       <span>{displayTitle(page)}</span>
     </button>

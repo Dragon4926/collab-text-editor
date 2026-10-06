@@ -1,3 +1,4 @@
+import { withShortcut } from '@/lib/keys';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eraser, Hand, Lasso, Redo2, Undo2 } from 'lucide-react';
@@ -35,6 +36,8 @@ interface Props {
   /** extra controls (paper picker, shapes…) */
   children?: React.ReactNode;
   showPan?: boolean;
+  /** one colour button instead of the full palette — for tight spaces */
+  compact?: boolean;
 }
 
 /**
@@ -42,7 +45,7 @@ interface Props {
  * borrowed from Samsung Notes and Apple's PencilKit tool picker. Tapping the
  * already-selected pen opens its colour/size settings.
  */
-export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan }: Props) {
+export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan, compact }: Props) {
   const tool = useInkTool();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const current = tool.settings[tool.pen];
@@ -86,26 +89,37 @@ export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan
       {showPan && modeBtn('pan', 'Pan', Hand)}
       <span className="ink-toolbar__sep" />
 
-      <div className="ink-toolbar__colors">
-        {INK_COLORS.slice(0, 7).map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={`ink-toolbar__swatch ${current.color === c && tool.mode === 'draw' ? 'is-active' : ''}`}
-            style={{ background: inkFill(c) }}
-            aria-label={`Color ${c}`}
-            onClick={() => tool.setColor(c)}
-          />
-        ))}
-      </div>
+      {compact ? (
+        <button
+          type="button"
+          className="ink-toolbar__swatch is-active"
+          style={{ background: inkFill(current.color) }}
+          aria-label="Colour and size"
+          title="Colour and size"
+          onClick={(e) => setAnchor(e.currentTarget)}
+        />
+      ) : (
+        <div className="ink-toolbar__colors">
+          {INK_COLORS.slice(0, 7).map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`ink-toolbar__swatch ${current.color === c && tool.mode === 'draw' ? 'is-active' : ''}`}
+              style={{ background: inkFill(c) }}
+              aria-label={`Color ${c}`}
+              onClick={() => tool.setColor(c)}
+            />
+          ))}
+        </div>
+      )}
 
       {(onUndo || onRedo) && (
         <>
           <span className="ink-toolbar__sep" />
-          <button type="button" className="ink-toolbar__tool" aria-label="Undo" title="Undo (⌘Z)" disabled={!canUndo} onClick={onUndo}>
+          <button type="button" className="ink-toolbar__tool" aria-label="Undo" title={withShortcut('Undo', 'Mod+Z')} disabled={!canUndo} onClick={onUndo}>
             <Undo2 width={18} height={18} />
           </button>
-          <button type="button" className="ink-toolbar__tool" aria-label="Redo" title="Redo (⇧⌘Z)" disabled={!canRedo} onClick={onRedo}>
+          <button type="button" className="ink-toolbar__tool" aria-label="Redo" title={withShortcut('Redo', 'Mod+Y')} disabled={!canRedo} onClick={onRedo}>
             <Redo2 width={18} height={18} />
           </button>
         </>

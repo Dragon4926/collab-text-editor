@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { BoardElement, InkPoint, PenKind, SpaceCard, Stroke } from './types';
 import { useWorkspace } from './workspace';
+import { h, p, shortcutsDoc, task } from './docBuilders';
 
 /**
  * First-run content. An empty app teaches nothing, so new users land on a
@@ -93,20 +94,7 @@ export function seedWorkspace() {
   const shortcutsId = s.createPage('doc', welcomeId, {
     title: 'Keyboard shortcuts',
     icon: { name: 'Zap', color: '#f76b15' },
-    doc: {
-      type: 'doc',
-      content: [
-        p('Lumen is designed to be driven from the keyboard. ⌘ is Ctrl on Windows and Linux.'),
-        h(2, 'Everywhere'),
-        bullets(['⌘K — command palette: search pages and run actions', '⌥N — new document', '⌘\\ — show or hide the sidebar', '⌘⇧L — switch light / dark']),
-        h(2, 'Documents'),
-        bullets(['/ — insert any block', '# ## ### — headings (Markdown shortcuts work everywhere)', '[] — to-do, - bullet, 1. numbered, > quote, ``` code', 'Select text — formatting toolbar']),
-        h(2, 'Canvases'),
-        bullets(['Space + drag or two-finger scroll — pan', 'Pinch or ⌘ + scroll — zoom at the cursor', '⌘0 — 100%, ⌘1 — zoom to fit', 'V select · H hand · N note · T text · F frame · S sketch', 'Whiteboard: P pen · E eraser · R O D shapes · A arrow']),
-        h(2, 'Ink'),
-        bullets(['Draw and hold still — snap to a perfect line, rectangle or ellipse', 'Lasso — circle strokes to move, recolour or duplicate them', 'Tap the active pen again — size and colour', '⌘Z / ⇧⌘Z — undo / redo']),
-      ],
-    },
+    doc: shortcutsDoc(),
   });
 
   const spaceId = s.createPage('space', null, { title: 'Research board', icon: { name: 'Orbit', color: '#0090ff' } });
@@ -136,7 +124,7 @@ export function seedWorkspace() {
       type: 'doc',
       content: [
         p('A calm place for documents, spatial thinking and ink. Everything stays on this device, saved as you go.'),
-        { type: 'callout', attrs: { tone: 'magic' }, content: [p('Press ⌘K at any time to search or jump anywhere. Type / on an empty line to insert blocks.')] },
+        { type: 'callout', attrs: { tone: 'magic' }, content: [p('Press Ctrl+K at any time to search or jump anywhere. Type / on an empty line to insert blocks.')] },
         h(2, 'Four ways to think'),
         { type: 'pageLink', attrs: { pageId: spaceId } },
         { type: 'pageLink', attrs: { pageId: boardId } },
@@ -165,18 +153,4 @@ export function seedWorkspace() {
   [welcomeId, spaceId, boardId, notebookId].forEach((id, i) => s.updatePage(id, { order: i }));
   s.setActive(welcomeId);
   s.markSeeded();
-}
-
-/* tiny ProseMirror JSON builders */
-function p(text: string) {
-  return { type: 'paragraph', content: [{ type: 'text', text }] };
-}
-function h(level: number, text: string) {
-  return { type: 'heading', attrs: { level }, content: [{ type: 'text', text }] };
-}
-function bullets(items: string[]) {
-  return { type: 'bulletList', content: items.map((t) => ({ type: 'listItem', content: [p(t)] })) };
-}
-function task(text: string, checked: boolean) {
-  return { type: 'taskItem', attrs: { checked }, content: [p(text)] };
 }

@@ -72,7 +72,7 @@ Each command runs as one **chain**:
 editor.chain().focus().deleteRange(range).toggleTaskList().run();
 ```
 
-Chaining batches steps into a single transaction, so one ⌘Z undoes the whole
+Chaining batches steps into a single transaction, so one Ctrl+Z undoes the whole
 thing including the deletion of `/todo`.
 
 ### The bubble toolbar and `useEditorState`

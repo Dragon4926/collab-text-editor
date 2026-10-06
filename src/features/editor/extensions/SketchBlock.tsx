@@ -44,7 +44,7 @@ function SketchView({ node, updateAttributes, selected, deleteNode, editor }: Re
         </span>
         {editor.isEditable && (
           <div className="sketch-block__tools">
-            <InkToolbar onUndo={doc.undo} onRedo={doc.redo} canUndo={doc.canUndo} canRedo={doc.canRedo} />
+            <InkToolbar compact onUndo={doc.undo} onRedo={doc.redo} canUndo={doc.canUndo} canRedo={doc.canRedo} />
             <button type="button" className="sketch-block__delete" aria-label="Delete sketch" title="Delete sketch" onClick={deleteNode}>
               <Trash2 width={15} height={15} />
             </button>

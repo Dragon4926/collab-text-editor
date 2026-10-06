@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { withShortcut } from '@/lib/keys';
+import { useEffect, useRef, useState } from 'react';
 import { useEditorState, type Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import { NodeSelection } from '@tiptap/pm/state';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bold, ChevronDown, Code, Highlighter, Italic, Link2, Strikethrough, Underline } from 'lucide-react';
 import { spring } from '@/lib/motion';
+
+const BUBBLE_KEY = 'lumenBubble';
 
 /** Highlight colours, matching the pen palette at low opacity. */
 export const HIGHLIGHTS = [
@@ -36,6 +39,26 @@ const BLOCK_TYPES = [
 export function BubbleToolbar({ editor }: { editor: Editor }) {
   const [panel, setPanel] = useState<'none' | 'link' | 'highlight' | 'turn'>('none');
   const [href, setHref] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  /*
+   * Hide when focus leaves both the editor and the toolbar. TipTap's own
+   * blur handling skips one blur after any mousedown inside the menu, and we
+   * cancel those mousedowns to keep the selection — so after using a button
+   * the toolbar could get stuck on screen once you clicked elsewhere.
+   */
+  useEffect(() => {
+    const onBlur = () =>
+      requestAnimationFrame(() => {
+        if (editor.isDestroyed || editor.view.hasFocus() || ref.current?.contains(document.activeElement)) return;
+        setPanel('none');
+        editor.view.dispatch(editor.state.tr.setMeta(BUBBLE_KEY, 'hide'));
+      });
+    editor.on('blur', onBlur);
+    return () => {
+      editor.off('blur', onBlur);
+    };
+  }, [editor]);
 
   const state = useEditorState({
     editor,
@@ -52,12 +75,12 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
     }),
   });
 
-  const mark = (active: boolean, label: string, Icon: typeof Bold, run: () => void, shortcut?: string) => (
+  const mark = (active: boolean, label: string, Icon: typeof Bold, run: () => void, keys?: string) => (
     <button
       type="button"
       className={`bubble__btn ${active ? 'is-active' : ''}`}
       aria-label={label}
-      title={shortcut ? `${label} (${shortcut})` : label}
+      title={keys ? withShortcut(label, keys) : label}
       aria-pressed={active}
       onClick={run}
     >
@@ -74,10 +97,18 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
 
   return (
     <BubbleMenu
+      ref={ref}
       editor={editor}
+      pluginKey={BUBBLE_KEY}
       options={{ placement: 'top', offset: 10 }}
       // only for text selections — not when a whole block (sketch, image…) is selected
-      shouldShow={({ editor: e, from, to, state }) => from !== to && !(state.selection instanceof NodeSelection) && !e.isActive('codeBlock') && e.isEditable}
+      shouldShow={({ editor: e, view, from, to, state }) =>
+        (view.hasFocus() || !!ref.current?.contains(document.activeElement)) &&
+        from !== to &&
+        !(state.selection instanceof NodeSelection) &&
+        !e.isActive('codeBlock') &&
+        e.isEditable
+      }
       className="bubble"
       onMouseDown={(e) => {
         // keep the selection alive unless the user clicks into the link input
@@ -90,11 +121,11 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
           <ChevronDown width={12} height={12} />
         </button>
         <span className="bubble__sep" />
-        {mark(state.bold, 'Bold', Bold, () => editor.chain().focus().toggleBold().run(), '⌘B')}
-        {mark(state.italic, 'Italic', Italic, () => editor.chain().focus().toggleItalic().run(), '⌘I')}
-        {mark(state.underline, 'Underline', Underline, () => editor.chain().focus().toggleUnderline().run(), '⌘U')}
+        {mark(state.bold, 'Bold', Bold, () => editor.chain().focus().toggleBold().run(), 'Mod+B')}
+        {mark(state.italic, 'Italic', Italic, () => editor.chain().focus().toggleItalic().run(), 'Mod+I')}
+        {mark(state.underline, 'Underline', Underline, () => editor.chain().focus().toggleUnderline().run(), 'Mod+U')}
         {mark(state.strike, 'Strikethrough', Strikethrough, () => editor.chain().focus().toggleStrike().run())}
-        {mark(state.code, 'Inline code', Code, () => editor.chain().focus().toggleCode().run(), '⌘E')}
+        {mark(state.code, 'Inline code', Code, () => editor.chain().focus().toggleCode().run(), 'Mod+E')}
         <span className="bubble__sep" />
         {mark(state.highlight, 'Highlight', Highlighter, () => setPanel(panel === 'highlight' ? 'none' : 'highlight'))}
         {mark(state.link, 'Link', Link2, () => {

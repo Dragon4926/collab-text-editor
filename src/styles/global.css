@@ -28,7 +28,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow: hidden;
-  transition: background-color var(--dur-slow) var(--ease-out);
+}
+
+/* ---------- Theme change: blurred cross-fade (see src/lib/theme.ts) ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation-name: theme-out;
+}
+::view-transition-new(root) {
+  animation-name: theme-in;
+}
+@keyframes theme-out {
+  to {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(1.006);
+  }
+}
+@keyframes theme-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(0.996);
+  }
 }
 
 button,

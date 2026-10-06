@@ -1,8 +1,10 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useShallow } from 'zustand/react/shallow';
 import { nanoid } from 'nanoid';
 import { idbStorage } from './idbStorage';
+import { shortcutsDoc } from './docBuilders';
 import type {
   BoardData,
   ID,
@@ -205,8 +207,25 @@ export const useWorkspace = create<WorkspaceState>()(
     })),
     {
       name: 'lumen-workspace',
-      version: 1,
-      storage: createJSONStorage(() => idbStorage),
+      version: 2,
+      storage: idbStorage(),
+      /**
+       * Migrations upgrade data saved by older versions. `version` is stored
+       * next to the state; when it's lower than ours, zustand calls this.
+       *  v1 → v2: the tour pages used Mac (⌘) shortcut notation; Lumen now
+       *  uses Windows conventions, so refresh those seeded pages.
+       */
+      migrate: (persisted, version) => {
+        const state = persisted as Pick<WorkspaceState, 'pages'>;
+        if (version < 2 && state?.pages) {
+          for (const page of Object.values(state.pages)) {
+            const text = JSON.stringify(page.doc ?? '');
+            if (page.title === 'Keyboard shortcuts' && text.includes('⌘K — command palette')) page.doc = shortcutsDoc();
+            else if (page.title === 'Welcome to Lumen' && text.includes('Press ⌘K')) page.doc = JSON.parse(text.replace('Press ⌘K', 'Press Ctrl+K'));
+          }
+        }
+        return persisted as WorkspaceState;
+      },
       partialize: ({ pages, activeId, expanded, theme, sidebarOpen, seeded }) => ({
         pages,
         activeId,
@@ -242,3 +261,17 @@ export function ancestry(pages: Record<ID, Page>, id: ID): Page[] {
 }
 
 export const displayTitle = (p: Pick<Page, 'title' | 'kind'>) => p.title.trim() || untitled[p.kind];
+
+/**
+ * Subscribe to just what's needed to *label* a page (title, kind, icon).
+ * Typing in a document changes its `doc` on every keystroke; components that
+ * only show the page's name shouldn't re-render for that.
+ */
+export function usePageLabel(id: ID | null | undefined) {
+  return useWorkspace(
+    useShallow((s) => {
+      const p = id ? s.pages[id] : undefined;
+      return p ? { id: p.id, title: p.title, kind: p.kind, icon: p.icon, favorite: p.favorite } : null;
+    }),
+  );
+}

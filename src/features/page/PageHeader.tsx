@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Shuffle, SmilePlus, X } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
+import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { Popover } from '@/components/ui/Popover';
 import { ICONS, ICON_COLORS, PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { COVERS, COVER_IDS } from './covers';
 import './PageHeader.css';
 
@@ -25,7 +27,13 @@ interface Props {
  * should ever be.
  */
 export function PageHeader({ pageId, onExitDown, compact }: Props) {
-  const page = useWorkspace((s) => s.pages[pageId]);
+  // select only header fields: the body's `doc` changes on every keystroke
+  const page = useWorkspace(
+    useShallow((s) => {
+      const p = s.pages[pageId];
+      return p ? { title: p.title, icon: p.icon, cover: p.cover, kind: p.kind, createdAt: p.createdAt } : null;
+    }),
+  );
   const updatePage = useWorkspace((s) => s.updatePage);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const [iconAnchor, setIconAnchor] = useState<HTMLElement | null>(null);
@@ -38,6 +46,16 @@ export function PageHeader({ pageId, onExitDown, compact }: Props) {
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [page?.title]);
+
+  // F2 → select the title for renaming
+  useEffect(() => {
+    const onRename = () => {
+      titleRef.current?.focus();
+      titleRef.current?.select();
+    };
+    window.addEventListener(RENAME_EVENT, onRename);
+    return () => window.removeEventListener(RENAME_EVENT, onRename);
+  }, []);
 
   // focus the title of a brand-new, empty page
   useEffect(() => {
@@ -79,11 +97,11 @@ export function PageHeader({ pageId, onExitDown, compact }: Props) {
             className="page-header__icon"
             aria-label="Change icon"
             onClick={(e) => setIconAnchor(e.currentTarget)}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 0.5, opacity: 0, filter: 'blur(8px)' }}
+            animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
             whileHover={{ scale: 1.06, rotate: -3 }}
             whileTap={{ scale: 0.95 }}
-            transition={spring.bouncy}
+            transition={withFocus(spring.bouncy)}
           >
             <PageIcon page={page} size={compact ? 30 : 40} />
           </motion.button>

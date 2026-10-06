@@ -1,3 +1,4 @@
+import { isRedo, isTyping, isUndo } from '@/lib/keys';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
@@ -5,21 +6,20 @@ import { FilePlus2, Layers, Trash2 } from 'lucide-react';
 import { useWorkspace } from '@/store/workspace';
 import type { ID, NotebookData, NotebookSheet, Stroke } from '@/store/types';
 import { useHistory } from '@/hooks/useHistory';
-import { isMod } from '@/components/ui/Kbd';
 import { Popover } from '@/components/ui/Popover';
 import { InkSurface } from '@/features/ink/InkSurface';
 import { InkToolbar } from '@/features/ink/InkToolbar';
 import { useInkTool } from '@/features/ink/toolStore';
 import { riseIn, spring, stagger } from '@/lib/motion';
 import { PageHeader } from '@/features/page/PageHeader';
-import { PAPERS, PAPER_TINTS, PaperPattern, SHEET_H, SHEET_W } from './paper';
+import { PAPERS, PAPER_TINTS, PaperPattern, SHEET_H, SHEET_W, paperInkVars } from './paper';
 import './Notebook.css';
 
 /**
  * A Samsung Notes-style notebook: a vertical stack of paper sheets you
  * handwrite on.
  *
- * Undo history covers the whole notebook (all sheets), so ⌘Z works no
+ * Undo history covers the whole notebook (all sheets), so Ctrl+Z works no
  * matter which sheet you last wrote on.
  */
 export function NotebookPage({ pageId }: { pageId: ID }) {
@@ -68,10 +68,9 @@ export function NotebookPage({ pageId }: { pageId: ID }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!isMod(e) || e.key.toLowerCase() !== 'z') return;
-      if ((e.target as HTMLElement).closest('input, textarea, [contenteditable="true"]')) return;
+      if (!(isUndo(e) || isRedo(e)) || isTyping(e.target)) return;
       e.preventDefault();
-      if (e.shiftKey) redo();
+      if (isRedo(e)) redo();
       else undo();
     };
     window.addEventListener('keydown', onKey);
@@ -97,7 +96,6 @@ export function NotebookPage({ pageId }: { pageId: ID }) {
     setSheets(notebook.sheets.filter((s) => s.id !== id));
   };
 
-  const tint = PAPER_TINTS[notebook.tint];
 
   return (
     <div className="notebook">
@@ -129,7 +127,7 @@ export function NotebookPage({ pageId }: { pageId: ID }) {
                   width={SHEET_W}
                   height={SHEET_H}
                   className="notebook__ink"
-                  style={{ '--ink-black': tint.inkBlack } as React.CSSProperties}
+                  style={paperInkVars(notebook.tint)}
                   underlay={<PaperPattern style={notebook.paper} tint={notebook.tint} id={`paper-${sheet.id}`} />}
                 />
                 <footer className="notebook__sheet-foot">

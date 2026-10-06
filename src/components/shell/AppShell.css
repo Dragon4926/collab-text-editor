@@ -29,7 +29,6 @@
   display: flex;
   flex-direction: column;
   background: var(--c-paper);
-  transition: background-color var(--dur-slow) var(--ease-out);
 }
 
 /* On narrow screens the sidebar overlays the content like a sheet. */

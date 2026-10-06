@@ -102,5 +102,5 @@ world coordinates and centres the camera there.
 
 1. Let users label edges: double-click an edge to edit `edge.label` and render
    it at the curve's midpoint (for a cubic Bézier, `t = 0.5`).
-2. Snap cards to the 24-unit grid while dragging with ⌥ held.
+2. Snap cards to the 24-unit grid while dragging with Alt held.
 3. Add an "auto-arrange" command that lays selected cards out in a grid.

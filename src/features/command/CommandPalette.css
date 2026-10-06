@@ -21,7 +21,8 @@
   -webkit-backdrop-filter: saturate(180%) blur(40px);
   box-shadow:
     var(--shadow-lg),
-    0 40px 100px rgba(40, 30, 120, 0.25);
+    0 40px 100px rgba(40, 30, 120, 0.25),
+    var(--glass-edge);
   overflow: hidden;
 }
 

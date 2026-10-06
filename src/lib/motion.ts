@@ -20,18 +20,45 @@ export const spring = {
   bouncy: { type: 'spring', stiffness: 420, damping: 18 },
 } satisfies Record<string, Transition>;
 
-/** Pop-in used by popovers and menus: scale up slightly from their anchor. */
+/*
+ * Blur + fade — the "materialise" transition Apple uses across macOS and
+ * iOS: things don't just fade, they come into focus. Pairing a few pixels
+ * of blur with opacity makes the change feel optical rather than digital,
+ * and hides the first frames of a scale change.
+ *
+ * Note `transitionEnd: { filter: 'none' }`: an element left at
+ * `filter: blur(0px)` still gets its own compositing layer, which can make
+ * text render slightly soft and breaks `backdrop-filter` on descendants.
+ * Removing the filter entirely once the animation ends avoids both.
+ */
+const SHARP = { filter: 'none' };
+
+/**
+ * Springs can overshoot, and an overshooting blur would dip below 0px (an
+ * invalid value). So blur always runs on a short ease-out tween while the
+ * other properties keep their spring: framer-motion accepts a per-property
+ * transition, e.g. `{ ...spring.snappy, filter: focus }`.
+ */
+export const focus: Transition = { duration: 0.28, ease: [0.22, 1, 0.36, 1] };
+export const withFocus = (t: Transition): Transition => ({ ...t, filter: focus });
+
+/** Menus, popovers, slash menu: grow from the anchor while coming into focus. */
 export const popIn: Variants = {
-  initial: { opacity: 0, scale: 0.96, y: -4 },
-  animate: { opacity: 1, scale: 1, y: 0, transition: spring.snappy },
-  exit: { opacity: 0, scale: 0.97, y: -2, transition: { duration: 0.12 } },
+  initial: { opacity: 0, scale: 0.94, y: -6, filter: 'blur(8px)' },
+  animate: { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transition: withFocus(spring.snappy), transitionEnd: SHARP },
+  exit: { opacity: 0, scale: 0.97, y: -3, filter: 'blur(6px)', transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } },
 };
 
-/** Page-level cross fade with a hint of upward travel. */
+/**
+ * Page-level crossfade. The outgoing page drifts back and defocuses while
+ * the incoming one sharpens into place — the two overlap (see PageView),
+ * which is what makes it read as one continuous motion.
+ */
 export const pageFade: Variants = {
-  initial: { opacity: 0, y: 8, filter: 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } },
-  exit: { opacity: 0, y: -4, filter: 'blur(2px)', transition: { duration: 0.14 } },
+  initial: { opacity: 0, scale: 1.012, filter: 'blur(10px)' },
+  animate: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] }, transitionEnd: SHARP },
+  // the outgoing page must not swallow clicks meant for the new one
+  exit: { opacity: 0, scale: 0.99, filter: 'blur(8px)', pointerEvents: 'none', transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } },
 };
 
 /** Parent variant that staggers its children's entrance. */
@@ -39,7 +66,16 @@ export const stagger = (delay = 0.035): Variants => ({
   animate: { transition: { staggerChildren: delay } },
 });
 
+/** Children of a stagger: rise a little while coming into focus. */
 export const riseIn: Variants = {
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0, transition: spring.smooth },
+  initial: { opacity: 0, y: 10, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: withFocus(spring.smooth), transitionEnd: SHARP },
 };
+
+/** Generic props for anything that should appear/disappear with blur-fade. */
+export const blurFade = {
+  initial: { opacity: 0, filter: 'blur(6px)', scale: 0.98 },
+  animate: { opacity: 1, filter: 'blur(0px)', scale: 1, transitionEnd: SHARP },
+  exit: { opacity: 0, filter: 'blur(6px)', scale: 0.98 },
+  transition: withFocus(spring.snappy),
+} as const;

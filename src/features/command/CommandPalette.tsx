@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArchiveRestore, CornerDownLeft, FileText, Home, HardDriveDownload, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
 import { exportBackup, pickBackup } from '@/lib/export/backup';
+import { toggleTheme } from '@/lib/theme';
 import { toast } from '@/components/ui/Toast';
 import { displayTitle, useWorkspace } from '@/store/workspace';
 import type { Page } from '@/store/types';
 import { PageIcon, KIND_LABEL } from '@/components/ui/PageIcon';
 import { docToText, fuzzyScore } from '@/lib/text';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import './CommandPalette.css';
 
 interface Result {
@@ -21,16 +22,25 @@ interface Result {
 }
 
 /**
- * The ⌘K command palette: one input that searches page titles, page *text*
+ * The Ctrl+K command palette: one input that searches page titles, page *text*
  * and app actions. It's the keyboard-first heart of the app — anything you
  * can click, you can also reach from here.
  */
 export function CommandPalette() {
   const open = useWorkspace((s) => s.paletteOpen);
   const setOpen = useWorkspace((s) => s.setPaletteOpen);
+  // A fresh key per opening: if the palette is reopened while its exit
+  // animation is still running, AnimatePresence would otherwise revive the
+  // closing instance — old query and all — instead of mounting a new one.
+  const [session, setSession] = useState(0);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setSession((n) => n + 1);
+  }
   return (
     <AnimatePresence>
-      {open && <PaletteBody key="palette" onClose={() => setOpen(false)} />}
+      {open && <PaletteBody key={session} onClose={() => setOpen(false)} />}
     </AnimatePresence>
   );
 }
@@ -77,7 +87,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       { id: 'new-board', title: 'New whiteboard', icon: <Shapes width={16} height={16} />, run: create('board') },
       { id: 'new-notebook', title: 'New notebook', icon: <NotebookPen width={16} height={16} />, run: create('notebook') },
       { id: 'home', title: 'Go home', icon: <Home width={16} height={16} />, run: () => s.setActive(null) },
-      { id: 'sidebar', title: 'Toggle sidebar', subtitle: '⌘\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
+      { id: 'sidebar', title: 'Toggle sidebar', subtitle: 'Ctrl+\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
       { id: 'backup', title: 'Export workspace backup', subtitle: 'All pages as one JSON file', icon: <HardDriveDownload width={16} height={16} />, run: exportBackup },
       {
         id: 'restore',
@@ -85,14 +95,19 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
         icon: <ArchiveRestore width={16} height={16} />,
         run: () => pickBackup((r) => (r instanceof Error ? toast(r.message, 'error') : toast(`Imported ${r} pages`))),
       },
-      { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: () => s.setTheme(dark ? 'light' : 'dark') },
+      { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: toggleTheme },
     ];
     const actionResults = actions
-      .map((a) => ({ ...a, section: 'Actions' as const, score: a.id === 'new-doc' && query ? 0 : fuzzyScore(a.title, query) }))
+      .map((a) => ({ ...a, section: 'Actions' as const, score: a.id === 'new-doc' && query ? Math.max(0, fuzzyScore('New document', query)) : fuzzyScore(a.title, query) }))
       .filter((a) => a.score >= 0)
       .sort((a, b) => b.score - a.score);
 
-    return [...pageResults, ...actionResults];
+    // Whichever section holds the best match comes first, so typing
+    // "new doc" runs the action rather than opening a page that merely
+    // mentions those words in its body.
+    const best = (rs: Result[]) => (rs.length ? rs[0].score : -1);
+    const actionsFirst = !!query && best(actionResults) > best(pageResults);
+    return actionsFirst ? [...actionResults, ...pageResults] : [...pageResults, ...actionResults];
   }, [index_, query, s]);
 
   useEffect(() => setIndex(0), [query]);
@@ -110,15 +125,23 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   let lastSection = '';
 
   return (
-    <motion.div className="palette-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }} onPointerDown={onClose}>
+    // Spotlight-style: the app behind softly defocuses while the palette is open
+    <motion.div
+      className="palette-backdrop"
+      initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+      animate={{ opacity: 1, backdropFilter: 'blur(6px)' }}
+      exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+      transition={{ duration: 0.22 }}
+      onPointerDown={onClose}
+    >
       <motion.div
         className="palette"
         role="dialog"
         aria-label="Command palette"
-        initial={{ opacity: 0, scale: 0.96, y: -12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.98, y: -6, transition: { duration: 0.12 } }}
-        transition={spring.snappy}
+        initial={{ opacity: 0, scale: 0.95, y: -14, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+        exit={{ opacity: 0, scale: 0.97, y: -6, filter: 'blur(8px)', transition: { duration: 0.16 } }}
+        transition={withFocus(spring.snappy)}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="palette__input">

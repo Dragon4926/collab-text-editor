@@ -23,7 +23,7 @@ Read them in order for a full course, or jump to the topic you need.
 | 08 | [The spatial space](08-spatial-space.md) | controller/view split, gestures, frames, connectors, minimap |
 | 09 | [The whiteboard](09-whiteboard.md) | discriminated unions, event delegation, pointer-capture pitfalls |
 | 10 | [Motion & polish](10-motion.md) | springs, layout animations, shared `layoutId`, presence |
-| 11 | [Commands & shortcuts](11-commands-and-shortcuts.md) | the ⌘K palette, fuzzy search, platform modifiers |
+| 11 | [Commands & shortcuts](11-commands-and-shortcuts.md) | the Ctrl+K palette, fuzzy search, Windows key conventions |
 | 12 | [Export & backup](12-export.md) | Markdown serialisation, SVG/PNG rendering, JSON backups |
 | 13 | [Performance](13-performance.md) | code splitting, memoisation, structural sharing |
 | 14 | [Git workflow](14-git-workflow.md) | how the history was written, commit conventions |

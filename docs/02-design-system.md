@@ -76,6 +76,16 @@ backdrop-filter: var(--blur);        /* saturate(180%) blur(24px) */
 look muddy; boosting saturation keeps the colours behind the glass vivid,
 which is what makes macOS vibrancy feel "lit".
 
+Floating glass (toolbars, menus, popovers, the palette) adds one more token:
+
+```css
+--glass-edge: inset 0 1px 0 rgba(255,255,255,.65), inset 0 0 0 .5px rgba(255,255,255,.35);
+```
+
+a bright top edge and faint rim, as if light catches the pane. It's the
+difference between "translucent rectangle" and "piece of glass". Dark mode
+dims it to a whisper.
+
 ### Layered shadows
 
 Real objects cast a tight contact shadow *and* a wide soft one. A single
@@ -124,7 +134,13 @@ twice) stay fluid.
 Dark mode is "graphite glass": near-black surfaces with a faint violet cast,
 lifted accent (`#8b7dff` — the light accent would be too dark on black), and
 heavier shadows (light shadows disappear on dark backgrounds, so the alpha goes
-up). The theme is applied by setting `data-theme="dark"` on `<html>`.
+up). The theme is applied by setting `data-theme="dark"` on `<html>`, and
+the switch is animated as a blurred cross-fade of the whole window (chapter 10).
+
+Some things depend on the *surface* rather than the theme. A highlighter on
+light notebook paper must multiply even in dark mode; on a dark sketch it must
+lighten instead. So surfaces set `--hl-blend` / `--hl-opacity` (and
+`--ink-black`) themselves, and the theme only provides the defaults.
 
 ## Accessibility checklist
 

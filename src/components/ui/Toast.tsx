@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { AnimatePresence, motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import './ui.css';
 
 /**
@@ -34,10 +34,10 @@ export function Toaster() {
             key={t.id}
             layout
             className={`toast toast--${t.tone}`}
-            initial={{ opacity: 0, y: 16, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96, transition: { duration: 0.15 } }}
-            transition={spring.bouncy}
+            initial={{ opacity: 0, y: 16, scale: 0.92, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+            exit={{ opacity: 0, y: 8, scale: 0.96, filter: 'blur(6px)', transition: { duration: 0.18 } }}
+            transition={withFocus(spring.bouncy)}
           >
             {t.tone === 'ok' ? <CheckCircle2 width={16} height={16} /> : <AlertCircle width={16} height={16} />}
             {t.message}

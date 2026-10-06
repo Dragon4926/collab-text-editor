@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkspace } from '@/store/workspace';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { Aurora } from './Aurora';
 import './AppShell.css';
 
@@ -36,8 +36,9 @@ export function AppShell({ sidebar, children }: Props) {
         <motion.aside
           className="shell__sidebar"
           initial={false}
-          animate={{ width: open ? SIDEBAR_W : 0, opacity: open ? 1 : 0 }}
-          transition={spring.smooth}
+          // the sidebar defocuses as it folds away, and sharpens as it returns
+          animate={{ width: open ? SIDEBAR_W : 0, opacity: open ? 1 : 0, filter: open ? 'blur(0px)' : 'blur(8px)', transitionEnd: open ? { filter: 'none' } : undefined }}
+          transition={withFocus(spring.smooth)}
           aria-hidden={!open}
         >
           <div className="shell__sidebar-inner">{sidebar}</div>
@@ -45,7 +46,13 @@ export function AppShell({ sidebar, children }: Props) {
         <main className="shell__main">{children}</main>
         <AnimatePresence>
           {narrow && open && (
-            <motion.div className="shell__scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} />
+            <motion.div
+              className="shell__scrim"
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
+              exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              onClick={() => setSidebarOpen(false)}
+            />
           )}
         </AnimatePresence>
       </div>
