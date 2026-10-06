@@ -5,6 +5,7 @@ import { Home } from '@/features/home/Home';
 import { DocPage } from '@/features/doc/DocPage';
 import { NotebookPage } from '@/features/notebook/NotebookPage';
 import { SpacePage } from '@/features/space/SpacePage';
+import { BoardPage } from '@/features/board/BoardPage';
 import './PageView.css';
 
 /**
@@ -33,9 +34,11 @@ function Surface({ id, kind }: { id: string; kind: string }) {
       return <DocPage pageId={id} />;
     case 'space':
       return <SpacePage pageId={id} />;
+    case 'board':
+      return <BoardPage pageId={id} />;
     case 'notebook':
       return <NotebookPage pageId={id} />;
     default:
-      return <div className="page-view__todo">{kind} surface coming soon</div>;
+      return null;
   }
 }
