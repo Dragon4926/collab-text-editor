@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { nanoid } from 'nanoid';
 import { idbStorage } from './idbStorage';
@@ -206,7 +206,7 @@ export const useWorkspace = create<WorkspaceState>()(
     {
       name: 'lumen-workspace',
       version: 1,
-      storage: createJSONStorage(() => idbStorage),
+      storage: idbStorage(),
       partialize: ({ pages, activeId, expanded, theme, sidebarOpen, seeded }) => ({
         pages,
         activeId,
