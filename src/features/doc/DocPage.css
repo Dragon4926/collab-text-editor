@@ -1,0 +1,17 @@
+.doc-page {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.doc-page__body {
+  max-width: var(--doc-max-w);
+  margin: 0 auto;
+  padding: 12px 32px 0;
+}
+
+@media (max-width: 640px) {
+  .doc-page__body {
+    padding: 8px 18px 0;
+  }
+}

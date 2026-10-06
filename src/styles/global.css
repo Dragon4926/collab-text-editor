@@ -1,0 +1,96 @@
+/*
+ * Global base styles: a small reset plus the defaults every screen relies on.
+ * Component styles live next to their components as CSS files.
+ */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--c-text);
+  background: var(--c-desktop);
+  /* macOS-like text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  transition: background-color var(--dur-slow) var(--ease-out);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: default; /* native Mac apps don't use the pointer hand on buttons */
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--c-accent-text);
+}
+
+::selection {
+  background: var(--c-accent-soft);
+}
+
+:focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 1px;
+  border-radius: var(--r-sm);
+}
+
+/* Thin, overlay-style scrollbars like macOS */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--c-line-strong);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Respect users who ask the OS for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

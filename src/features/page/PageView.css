@@ -1,0 +1,33 @@
+.page-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-view__loading {
+  margin: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--c-accent-soft);
+  border-top-color: var(--c-accent);
+  /* only show the spinner if loading is actually slow */
+  opacity: 0;
+  animation-delay: 0s, 250ms;
+  animation-name: spin, fade-in;
+  animation-duration: 0.8s, 0.2s;
+  animation-iteration-count: infinite, 1;
+  animation-fill-mode: none, forwards;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}

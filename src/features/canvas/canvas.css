@@ -1,0 +1,141 @@
+/* Shared infinite-canvas chrome */
+.canvas-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--c-canvas);
+  /* dot grid; size & position follow the camera (see cameraStyles) */
+  background-image: radial-gradient(circle, var(--c-line-strong) 1px, transparent 1.2px);
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+.canvas-viewport.is-space,
+.canvas-viewport.tool-hand {
+  cursor: grab;
+}
+.canvas-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.canvas-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.canvas-marquee {
+  position: absolute;
+  border: 1px solid var(--c-accent);
+  background: var(--c-accent-softer);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ---------- Floating chrome ---------- */
+.canvas-chrome {
+  position: absolute;
+  z-index: 20;
+}
+.canvas-chrome--top {
+  top: 14px;
+  left: 50%;
+  translate: -50% 0;
+  max-width: calc(100% - 24px);
+}
+.canvas-chrome--bl {
+  left: 14px;
+  bottom: 14px;
+}
+.canvas-chrome--br {
+  right: 14px;
+  bottom: 14px;
+}
+
+.glass-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--c-glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-lg);
+}
+.glass-bar__btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  color: var(--c-text-2);
+  transition:
+    color var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+.glass-bar__btn:hover {
+  background: var(--c-fill-hover);
+}
+.glass-bar__btn:active {
+  transform: scale(0.92);
+}
+.glass-bar__btn.is-active {
+  color: #fff;
+}
+.glass-bar__btn svg {
+  position: relative;
+  z-index: 1;
+}
+.glass-bar__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  background: var(--c-accent);
+  box-shadow: var(--shadow-glow);
+}
+.glass-bar__sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 5px;
+  background: var(--c-line-strong);
+}
+
+.zoom-pill {
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--c-glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-md), var(--shadow-hairline);
+  font-size: var(--text-xs);
+}
+.zoom-pill button {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  min-width: 28px;
+  border-radius: var(--r-sm);
+  color: var(--c-text-2);
+}
+.zoom-pill button:hover {
+  background: var(--c-fill-hover);
+}
+.zoom-pill__value {
+  min-width: 48px !important;
+  font-variant-numeric: tabular-nums;
+}
+.zoom-pill__sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 3px;
+  background: var(--c-line-strong);
+}
