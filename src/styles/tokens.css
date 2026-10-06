@@ -1,0 +1,167 @@
+/*
+ * Lumen design tokens
+ * -------------------
+ * Every colour, radius, shadow and duration used by the UI lives here as a
+ * CSS custom property. Components never hard-code values; they reference a
+ * token. Switching theme is then just a matter of redefining the tokens
+ * under [data-theme="dark"] — no component needs to know about themes.
+ *
+ * See docs/02-design-system.md for the reasoning behind each group.
+ */
+
+:root {
+  /* ---------- Typography ---------- */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable', 'Helvetica Neue', sans-serif;
+  --font-display: 'Instrument Serif', 'New York', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-body: 16px;
+  --text-lg: 19px;
+  --text-xl: 24px;
+  --text-2xl: 30px;
+  --text-display: 46px;
+
+  /* ---------- Colour: surfaces ---------- */
+  --c-desktop: #e9e7f4;          /* behind the window, tinted by the aurora */
+  --c-canvas: #f5f5f7;           /* app background, spatial canvas */
+  --c-paper: #fbfbfd;            /* where content lives */
+  --c-paper-raised: #ffffff;     /* cards, popovers */
+  --c-sheet: #fffdf8;            /* warm notebook paper */
+
+  /* glass = translucent chrome; pair with backdrop-filter */
+  --c-glass: rgba(246, 245, 251, 0.72);
+  --c-glass-strong: rgba(255, 255, 255, 0.86);
+  --c-sidebar: rgba(236, 234, 245, 0.78);
+
+  /* ---------- Colour: text ---------- */
+  --c-text: #1d1d1f;
+  --c-text-2: #424245;
+  --c-text-3: #6e6e73;
+  --c-text-4: #8e8e93;
+  --c-text-inverse: #ffffff;
+
+  /* ---------- Colour: lines & fills ---------- */
+  --c-line: rgba(0, 0, 0, 0.08);
+  --c-line-strong: rgba(0, 0, 0, 0.14);
+  --c-fill: rgba(0, 0, 0, 0.04);
+  --c-fill-hover: rgba(0, 0, 0, 0.06);
+  --c-fill-active: rgba(0, 0, 0, 0.09);
+
+  /* ---------- Colour: accent ("Iris") ---------- */
+  --c-accent: #5b4cf0;
+  --c-accent-hover: #4b3be0;
+  --c-accent-soft: rgba(91, 76, 240, 0.12);
+  --c-accent-softer: rgba(91, 76, 240, 0.06);
+  --c-accent-text: #4636d6;
+  --c-focus: rgba(91, 76, 240, 0.45);
+
+  /* ---------- Colour: semantic ---------- */
+  --c-danger: #e5484d;
+  --c-warning: #f76b15;
+  --c-success: #30a46c;
+  --c-highlight: rgba(255, 197, 61, 0.45);
+
+  /* ---------- Pen palette (Samsung Notes-inspired) ---------- */
+  --ink-black: #1d1d1f;
+  --ink-red: #e5484d;
+  --ink-orange: #f76b15;
+  --ink-yellow: #ffc53d;
+  --ink-green: #30a46c;
+  --ink-blue: #0090ff;
+  --ink-purple: #8e4ec6;
+
+  /* ---------- Sticky note fills ---------- */
+  --note-yellow: #fff4b8;
+  --note-green: #d9f2e4;
+  --note-blue: #dceeff;
+  --note-pink: #fde0ec;
+  --note-purple: #ebe4ff;
+  --note-gray: #efeff2;
+
+  /* ---------- Shape ---------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-window: 14px;
+  --r-pill: 999px;
+
+  /* ---------- Depth ---------- */
+  --shadow-hairline: 0 0 0 1px var(--c-line);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 0 0 1px var(--c-line), 0 18px 48px rgba(20, 16, 60, 0.16);
+  --shadow-window: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 30px 80px rgba(40, 30, 120, 0.22), 0 10px 24px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 10px 30px rgba(91, 76, 240, 0.22);
+
+  /* ---------- Glass recipe ---------- */
+  --blur: saturate(180%) blur(24px);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-med: 220ms;
+  --dur-slow: 380ms;
+
+  /* ---------- Layout ---------- */
+  --sidebar-w: 260px;
+  --titlebar-h: 52px;
+  --doc-max-w: 720px;
+
+  color-scheme: light;
+}
+
+/* ===================== Dark: graphite glass ===================== */
+:root[data-theme='dark'] {
+  --c-desktop: #121118;
+  --c-canvas: #19191c;
+  --c-paper: #1c1c1f;
+  --c-paper-raised: #252528;
+  --c-sheet: #222125;
+
+  --c-glass: rgba(36, 35, 42, 0.7);
+  --c-glass-strong: rgba(44, 43, 50, 0.86);
+  --c-sidebar: rgba(30, 29, 36, 0.78);
+
+  --c-text: #f5f5f7;
+  --c-text-2: #d1d1d6;
+  --c-text-3: #a1a1a6;
+  --c-text-4: #7c7c80;
+  --c-text-inverse: #1d1d1f;
+
+  --c-line: rgba(255, 255, 255, 0.08);
+  --c-line-strong: rgba(255, 255, 255, 0.15);
+  --c-fill: rgba(255, 255, 255, 0.05);
+  --c-fill-hover: rgba(255, 255, 255, 0.08);
+  --c-fill-active: rgba(255, 255, 255, 0.12);
+
+  --c-accent: #8b7dff;
+  --c-accent-hover: #9d91ff;
+  --c-accent-soft: rgba(139, 125, 255, 0.2);
+  --c-accent-softer: rgba(139, 125, 255, 0.1);
+  --c-accent-text: #b3a9ff;
+  --c-focus: rgba(139, 125, 255, 0.55);
+
+  --c-highlight: rgba(255, 197, 61, 0.3);
+  --ink-black: #f2f2f5;
+
+  --note-yellow: #4a4220;
+  --note-green: #1f3d2e;
+  --note-blue: #1d3349;
+  --note-pink: #4a2335;
+  --note-purple: #33294d;
+  --note-gray: #2c2c30;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 0 0 1px var(--c-line), 0 18px 48px rgba(0, 0, 0, 0.5);
+  --shadow-window: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 30px 80px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 10px 30px rgba(139, 125, 255, 0.25);
+
+  color-scheme: dark;
+}
