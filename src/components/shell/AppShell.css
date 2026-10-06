@@ -41,3 +41,10 @@
     box-shadow: var(--shadow-lg);
   }
 }
+
+.shell__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  background: rgba(10, 8, 30, 0.25);
+}

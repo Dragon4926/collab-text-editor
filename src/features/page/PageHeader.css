@@ -214,3 +214,12 @@
 .page-header__title:focus-visible {
   outline: none;
 }
+
+@media (max-width: 640px) {
+  .page-header__body {
+    padding: 40px 18px 8px;
+  }
+  .page-header__title {
+    font-size: 36px;
+  }
+}

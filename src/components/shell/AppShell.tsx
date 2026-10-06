@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkspace } from '@/store/workspace';
 import { spring } from '@/lib/motion';
 import { Aurora } from './Aurora';
@@ -19,6 +19,15 @@ interface Props {
  */
 export function AppShell({ sidebar, children }: Props) {
   const open = useWorkspace((s) => s.sidebarOpen);
+  const activeId = useWorkspace((s) => s.activeId);
+  const setSidebarOpen = useWorkspace((s) => s.setSidebarOpen);
+  const narrow = useNarrow();
+
+  // On phones the sidebar is a sheet over the content: start closed, and
+  // close it once a page has been chosen.
+  useEffect(() => {
+    if (narrow) setSidebarOpen(false);
+  }, [narrow, activeId, setSidebarOpen]);
 
   return (
     <>
@@ -34,7 +43,24 @@ export function AppShell({ sidebar, children }: Props) {
           <div className="shell__sidebar-inner">{sidebar}</div>
         </motion.aside>
         <main className="shell__main">{children}</main>
+        <AnimatePresence>
+          {narrow && open && (
+            <motion.div className="shell__scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} />
+          )}
+        </AnimatePresence>
       </div>
     </>
   );
+}
+
+function useNarrow() {
+  const query = '(max-width: 760px)';
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return narrow;
 }
