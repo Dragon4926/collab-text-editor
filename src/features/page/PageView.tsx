@@ -3,6 +3,7 @@ import { useWorkspace } from '@/store/workspace';
 import { pageFade } from '@/lib/motion';
 import { Home } from '@/features/home/Home';
 import { DocPage } from '@/features/doc/DocPage';
+import { NotebookPage } from '@/features/notebook/NotebookPage';
 import './PageView.css';
 
 /**
@@ -29,6 +30,8 @@ function Surface({ id, kind }: { id: string; kind: string }) {
   switch (kind) {
     case 'doc':
       return <DocPage pageId={id} />;
+    case 'notebook':
+      return <NotebookPage pageId={id} />;
     default:
       return <div className="page-view__todo">{kind} surface coming soon</div>;
   }
