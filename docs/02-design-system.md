@@ -5,10 +5,27 @@
 > ink) sits on opaque paper. The accent colour is used sparingly so that when
 > it appears, it means something: "selected", "active", "you are here".
 
-The visual concept was explored first as a design board (Claude Design canvas)
-with four artboards — concept & tokens, document editor, spatial space and ink
-notebook — before any code was written. This document is the written version
-of that board, and `src/styles/tokens.css` is its implementation.
+The visual concept was explored first as a design board (a Claude Design
+canvas: [Lumen — Design Concept](https://claude.ai/artifact/R5GCWMN1G1kjHDaFphNJcz),
+private to the project owner unless shared) with four artboards — concept &
+tokens, document editor, spatial space and ink notebook — before any code was
+written. This document is the written version of that board, and
+`src/styles/tokens.css` is its implementation.
+
+```
+ Concept & tokens          Document editor
+ ┌──────────────────┐      ┌──────────────────────────┐
+ │ Light through     │      │ ▢ glass sidebar │ cover  │
+ │ glass.            │      │ favorites       │ Title  │
+ │ colour·type·depth │      │ spaces          │ blocks │
+ └──────────────────┘      └──────────────────────────┘
+ Spatial space             Ink notebook
+ ┌──────────────────┐      ┌──────────────────────────┐
+ │ notes  ──▶ page  │      │   pen case toolbar       │
+ │ frame     card   │      │   ┌──────────┐ paper     │
+ │ minimap  zoom    │      │   │ lined A4 │ picker    │
+ └──────────────────┘      └──────────────────────────┘
+```
 
 ## Why design tokens?
 
