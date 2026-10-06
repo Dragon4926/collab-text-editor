@@ -7,6 +7,10 @@ import Typography from '@tiptap/extension-typography';
 import { SlashCommand } from './SlashCommand';
 import { Callout } from './Callout';
 import { CodeBlock } from './codeBlock';
+import { SketchBlock } from './SketchBlock';
+import { VoiceMemo } from './VoiceMemo';
+import { PageLink } from './PageLink';
+import { DocImage, ImageDrop } from './media';
 
 /**
  * The editor's schema is the sum of its extensions. Each extension
@@ -36,5 +40,10 @@ export function createExtensions(): Extensions {
     SlashCommand,
     Callout,
     CodeBlock,
+    SketchBlock,
+    VoiceMemo,
+    PageLink,
+    DocImage,
+    ImageDrop,
   ];
 }

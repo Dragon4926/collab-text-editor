@@ -1,6 +1,12 @@
 import type { Editor, Range } from '@tiptap/react';
+import { useWorkspace } from '@/store/workspace';
+import { pickImages } from './extensions/media';
 import {
   Code2,
+  FileText,
+  ImageIcon,
+  Mic,
+  PenLine,
   Info,
   Heading1,
   Heading2,
@@ -133,6 +139,49 @@ export const BLOCK_COMMANDS: BlockCommand[] = [
     icon: Info,
     keywords: ['note', 'info', 'warning', 'tip', 'aside'],
     run: (e, r) => base(e, r).setCallout('info').run(),
+  },
+  {
+    id: 'sketch',
+    title: 'Sketch',
+    description: 'Handwrite or draw inline',
+    group: 'Ink & voice',
+    icon: PenLine,
+    keywords: ['draw', 'ink', 'handwriting', 'pen', 'doodle', 'scribble'],
+    run: (e, r) => base(e, r).insertSketch().run(),
+  },
+  {
+    id: 'voice',
+    title: 'Voice memo',
+    description: 'Record audio into the note',
+    group: 'Ink & voice',
+    icon: Mic,
+    keywords: ['audio', 'record', 'microphone', 'sound'],
+    run: (e, r) => base(e, r).insertVoiceMemo().run(),
+  },
+  {
+    id: 'image',
+    title: 'Image',
+    description: 'Upload a picture',
+    group: 'Media',
+    icon: ImageIcon,
+    keywords: ['photo', 'picture', 'upload', 'img'],
+    run: (e, r) => {
+      base(e, r).run();
+      pickImages(e.view);
+    },
+  },
+  {
+    id: 'page',
+    title: 'Sub-page',
+    description: 'Create a page inside this one',
+    group: 'Media',
+    icon: FileText,
+    keywords: ['subpage', 'child', 'nested', 'link'],
+    run: (e, r) => {
+      const s = useWorkspace.getState();
+      const id = s.createPage('doc', s.activeId);
+      base(e, r).insertPageLink(id).run();
+    },
   },
   {
     id: 'code',
