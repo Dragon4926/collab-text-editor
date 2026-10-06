@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { childrenOf, displayTitle, useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { PageIcon } from '@/components/ui/PageIcon';
+import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { spring } from '@/lib/motion';
 
@@ -107,7 +108,6 @@ function TreeRow({ id, depth }: { id: ID; depth: number }) {
     {
       label: 'Duplicate',
       icon: <Copy />,
-      shortcut: 'Mod+D',
       onSelect: () => {
         const copy = s.duplicatePage(page.id);
         if (copy) s.setActive(copy);
@@ -139,6 +139,13 @@ function TreeRow({ id, depth }: { id: ID; depth: number }) {
           if (e.key === 'Enter') s.setActive(page.id);
           if (e.key === 'ArrowRight') s.toggleExpanded(page.id, true);
           if (e.key === 'ArrowLeft') s.toggleExpanded(page.id, false);
+          if (e.key === 'Delete') s.trashPage(page.id);
+          if (e.key === 'F2') {
+            e.preventDefault();
+            e.stopPropagation();
+            s.setActive(page.id);
+            setTimeout(() => window.dispatchEvent(new Event(RENAME_EVENT)), 350);
+          }
         }}
         onContextMenu={(e) => {
           e.preventDefault();

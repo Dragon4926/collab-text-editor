@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { motion } from 'framer-motion';
 import { ChevronRight, Copy, FileDown, ImageDown, MoreHorizontal, PanelLeftOpen, Star, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
@@ -108,6 +109,12 @@ function CurrentTitle({ id }: { id: string }) {
   const [editing, setEditing] = useState(
     () => !!page && !page.title && (page.kind === 'space' || page.kind === 'board') && Date.now() - page.createdAt < 1500,
   );
+  useEffect(() => {
+    // documents rename in their big header; everything else renames here
+    const onRename = () => useWorkspace.getState().pages[id]?.kind !== 'doc' && setEditing(true);
+    window.addEventListener(RENAME_EVENT, onRename);
+    return () => window.removeEventListener(RENAME_EVENT, onRename);
+  }, [id]);
   if (!page) return null;
   return editing ? (
     <span className="titlebar__rename">
@@ -125,7 +132,7 @@ function CurrentTitle({ id }: { id: string }) {
       />
     </span>
   ) : (
-    <button type="button" aria-current="page" title="Rename" onClick={() => setEditing(true)}>
+    <button type="button" aria-current="page" title="Rename (F2)" onClick={() => setEditing(true)}>
       <PageIcon page={page} size={14} />
       <span>{displayTitle(page)}</span>
     </button>

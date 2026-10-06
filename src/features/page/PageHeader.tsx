@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Shuffle, SmilePlus, X } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { Popover } from '@/components/ui/Popover';
@@ -45,6 +46,16 @@ export function PageHeader({ pageId, onExitDown, compact }: Props) {
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [page?.title]);
+
+  // F2 → select the title for renaming
+  useEffect(() => {
+    const onRename = () => {
+      titleRef.current?.focus();
+      titleRef.current?.select();
+    };
+    window.addEventListener(RENAME_EVENT, onRename);
+    return () => window.removeEventListener(RENAME_EVENT, onRename);
+  }, []);
 
   // focus the title of a brand-new, empty page
   useEffect(() => {
