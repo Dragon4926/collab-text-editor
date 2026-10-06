@@ -17,6 +17,9 @@ interface Props {
   className?: string;
   /** disable input (e.g. read-only previews) */
   readOnly?: boolean;
+  /** SVG drawn beneath the ink, e.g. paper lines */
+  underlay?: React.ReactNode;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -27,7 +30,7 @@ interface Props {
  * `toLocal` converts screen pixels to paper units by dividing by the
  * element's current scale.
  */
-export function InkSurface({ strokes, commit, width, height, className = '', readOnly }: Props) {
+export function InkSurface({ strokes, commit, width, height, className = '', readOnly, underlay, style }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const filterId = `pencil-${useId().replace(/:/g, '')}`;
 
@@ -43,7 +46,7 @@ export function InkSurface({ strokes, commit, width, height, className = '', rea
   const box = ink.selectionBox;
 
   return (
-    <div className={`ink-surface mode-${ink.mode} ${className}`}>
+    <div className={`ink-surface mode-${ink.mode} ${className}`} style={style}>
       <svg
         ref={ref}
         className="ink-surface__svg"
@@ -52,6 +55,7 @@ export function InkSurface({ strokes, commit, width, height, className = '', rea
         {...(readOnly ? {} : ink.handlers)}
       >
         <InkDefs id={filterId} />
+        {underlay}
         <InkLayer strokes={strokes} selected={ink.selected} filterId={filterId} />
         {ink.live && <StrokePath stroke={ink.live} complete={false} filterId={filterId} />}
         {ink.lasso && <path className="ink-lasso" d={`M${ink.lasso.map((p) => p.join(',')).join(' L')}`} />}
