@@ -29,9 +29,18 @@ interface Result {
 export function CommandPalette() {
   const open = useWorkspace((s) => s.paletteOpen);
   const setOpen = useWorkspace((s) => s.setPaletteOpen);
+  // A fresh key per opening: if the palette is reopened while its exit
+  // animation is still running, AnimatePresence would otherwise revive the
+  // closing instance — old query and all — instead of mounting a new one.
+  const [session, setSession] = useState(0);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setSession((n) => n + 1);
+  }
   return (
     <AnimatePresence>
-      {open && <PaletteBody key="palette" onClose={() => setOpen(false)} />}
+      {open && <PaletteBody key={session} onClose={() => setOpen(false)} />}
     </AnimatePresence>
   );
 }
@@ -89,11 +98,16 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: toggleTheme },
     ];
     const actionResults = actions
-      .map((a) => ({ ...a, section: 'Actions' as const, score: a.id === 'new-doc' && query ? 0 : fuzzyScore(a.title, query) }))
+      .map((a) => ({ ...a, section: 'Actions' as const, score: a.id === 'new-doc' && query ? Math.max(0, fuzzyScore('New document', query)) : fuzzyScore(a.title, query) }))
       .filter((a) => a.score >= 0)
       .sort((a, b) => b.score - a.score);
 
-    return [...pageResults, ...actionResults];
+    // Whichever section holds the best match comes first, so typing
+    // "new doc" runs the action rather than opening a page that merely
+    // mentions those words in its body.
+    const best = (rs: Result[]) => (rs.length ? rs[0].score : -1);
+    const actionsFirst = !!query && best(actionResults) > best(pageResults);
+    return actionsFirst ? [...actionResults, ...pageResults] : [...pageResults, ...actionResults];
   }, [index_, query, s]);
 
   useEffect(() => setIndex(0), [query]);
