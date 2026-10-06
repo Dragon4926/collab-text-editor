@@ -1,0 +1,129 @@
+/* ---------------- IconButton ---------------- */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  color: var(--c-text-3);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.icon-btn--sm {
+  width: 24px;
+  height: 24px;
+}
+.icon-btn--md {
+  width: 30px;
+  height: 30px;
+}
+.icon-btn--lg {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+}
+.icon-btn:hover {
+  background: var(--c-fill-hover);
+  color: var(--c-text);
+}
+.icon-btn:active {
+  background: var(--c-fill-active);
+  transform: scale(0.94);
+}
+.icon-btn.is-active {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-text);
+}
+.icon-btn:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+.icon-btn--sm svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------------- Kbd ---------------- */
+.kbd {
+  display: inline-flex;
+  gap: 1px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--c-text-4);
+  letter-spacing: 0.02em;
+}
+
+/* ---------------- Menu ---------------- */
+.menu {
+  position: fixed;
+  z-index: 1000;
+  padding: 5px;
+  border-radius: var(--r-md);
+  background: var(--c-glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  user-select: none;
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: var(--r-sm);
+  text-align: left;
+  color: var(--c-text);
+}
+.menu__item.is-hover {
+  background: var(--c-accent);
+  color: #fff;
+}
+.menu__item.is-hover .kbd,
+.menu__item.is-hover .menu__icon {
+  color: rgba(255, 255, 255, 0.85);
+}
+.menu__item.is-danger {
+  color: var(--c-danger);
+}
+.menu__item.is-danger.is-hover {
+  background: var(--c-danger);
+  color: #fff;
+}
+.menu__icon {
+  display: inline-flex;
+  width: 16px;
+  color: var(--c-text-3);
+}
+.menu__icon svg {
+  width: 15px;
+  height: 15px;
+}
+.menu__label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.menu__check {
+  font-size: 12px;
+}
+.menu__sep {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--c-line);
+}
+.menu__heading {
+  padding: 6px 8px 3px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--c-text-4);
+}
