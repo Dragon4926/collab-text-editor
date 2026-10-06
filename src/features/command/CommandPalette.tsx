@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CornerDownLeft, FileText, Home, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
+import { ArchiveRestore, CornerDownLeft, FileText, Home, HardDriveDownload, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
+import { exportBackup, pickBackup } from '@/lib/export/backup';
+import { toast } from '@/components/ui/Toast';
 import { displayTitle, useWorkspace } from '@/store/workspace';
 import type { Page } from '@/store/types';
 import { PageIcon, KIND_LABEL } from '@/components/ui/PageIcon';
@@ -76,6 +78,13 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       { id: 'new-notebook', title: 'New notebook', icon: <NotebookPen width={16} height={16} />, run: create('notebook') },
       { id: 'home', title: 'Go home', icon: <Home width={16} height={16} />, run: () => s.setActive(null) },
       { id: 'sidebar', title: 'Toggle sidebar', subtitle: '⌘\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
+      { id: 'backup', title: 'Export workspace backup', subtitle: 'All pages as one JSON file', icon: <HardDriveDownload width={16} height={16} />, run: exportBackup },
+      {
+        id: 'restore',
+        title: 'Import backup…',
+        icon: <ArchiveRestore width={16} height={16} />,
+        run: () => pickBackup((r) => (r instanceof Error ? toast(r.message, 'error') : toast(`Imported ${r} pages`))),
+      },
       { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: () => s.setTheme(dark ? 'light' : 'dark') },
     ];
     const actionResults = actions

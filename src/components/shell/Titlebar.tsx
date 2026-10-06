@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Copy, MoreHorizontal, PanelLeftOpen, Star, Trash2 } from 'lucide-react';
+import { ChevronRight, Copy, FileDown, ImageDown, MoreHorizontal, PanelLeftOpen, Star, Trash2 } from 'lucide-react';
 import { ancestry, displayTitle, useWorkspace } from '@/store/workspace';
 import { IconButton } from '@/components/ui/IconButton';
-import { Menu, useMenu } from '@/components/ui/Menu';
+import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
+import { exportPage } from '@/lib/export/exportPage';
 import { KIND_LABEL, PageIcon } from '@/components/ui/PageIcon';
 import { spring } from '@/lib/motion';
 import { TrafficLights } from './TrafficLights';
@@ -71,6 +72,7 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
             anchor={menu.anchor}
             onClose={menu.close}
             items={[
+              ...exportItems(page.id, page.kind),
               {
                 label: 'Duplicate',
                 icon: <Copy />,
@@ -122,4 +124,15 @@ function CurrentTitle({ id }: { id: string }) {
       <span>{displayTitle(page)}</span>
     </button>
   );
+}
+
+function exportItems(id: string, kind: string): MenuItem[] {
+  if (kind === 'doc') return [{ label: 'Export as Markdown', icon: <FileDown />, onSelect: () => void exportPage(id, 'md') }, 'separator'];
+  if (kind === 'board' || kind === 'notebook')
+    return [
+      { label: 'Export as PNG', icon: <ImageDown />, onSelect: () => void exportPage(id, 'png') },
+      { label: 'Export as SVG', icon: <FileDown />, onSelect: () => void exportPage(id, 'svg') },
+      'separator',
+    ];
+  return [];
 }
