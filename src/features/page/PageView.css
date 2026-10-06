@@ -1,0 +1,12 @@
+.page-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-view__todo {
+  margin: auto;
+  color: var(--c-text-4);
+}
