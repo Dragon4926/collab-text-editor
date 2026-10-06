@@ -65,7 +65,12 @@ export function Home() {
               variants={riseIn}
               whileHover={{ y: -4, transition: spring.snappy }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => setActive(createPage(kind))}
+              onClick={(e) => {
+                // Drop focus first: during the page transition this button is
+                // still mounted, and a quick Space/Enter would "click" it again.
+                e.currentTarget.blur();
+                setActive(createPage(kind));
+              }}
               style={{ '--tint': tint } as React.CSSProperties}
             >
               <span className="home__card-icon">
