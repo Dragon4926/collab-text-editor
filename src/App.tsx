@@ -1,6 +1,7 @@
 import { useHydrated } from '@/hooks/useHydrated';
 import { useTheme } from '@/hooks/useTheme';
 import { AppShell } from '@/components/shell/AppShell';
+import { Sidebar } from '@/components/sidebar/Sidebar';
 
 export function App() {
   const hydrated = useHydrated();
@@ -9,7 +10,7 @@ export function App() {
   if (!hydrated) return null;
 
   return (
-    <AppShell sidebar={<div />}>
+    <AppShell sidebar={<Sidebar />}>
       <div />
     </AppShell>
   );
