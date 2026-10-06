@@ -79,7 +79,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge);
   font-size: var(--text-sm);
   user-select: none;
 }
@@ -151,7 +153,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge);
   font-size: var(--text-sm);
 }
 .popover__label {

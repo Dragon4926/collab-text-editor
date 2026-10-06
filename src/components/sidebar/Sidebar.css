@@ -91,6 +91,11 @@
   color: var(--c-text-2);
   outline-offset: -2px;
 }
+.tree-row {
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
 .tree-row:hover {
   background: var(--c-fill-hover);
 }

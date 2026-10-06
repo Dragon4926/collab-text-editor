@@ -85,7 +85,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge);
   white-space: nowrap;
 }
 .ink-selection-bar__swatch {
@@ -127,7 +129,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge);
   user-select: none;
 }
 .ink-toolbar__pens {
