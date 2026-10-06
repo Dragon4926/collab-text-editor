@@ -25,6 +25,7 @@ import { Kbd } from '@/components/ui/Kbd';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { PageIcon } from '@/components/ui/PageIcon';
 import { spring } from '@/lib/motion';
+import { changeTheme } from '@/lib/theme';
 import { PageTree } from './PageTree';
 import './Sidebar.css';
 
@@ -172,11 +173,10 @@ const THEMES: { value: ThemePref; label: string; Icon: typeof Sun }[] = [
  */
 function ThemeSwitch() {
   const theme = useWorkspace((s) => s.theme);
-  const setTheme = useWorkspace((s) => s.setTheme);
   return (
     <div className="segmented" role="radiogroup" aria-label="Appearance">
       {THEMES.map(({ value, label, Icon }) => (
-        <button key={value} type="button" role="radio" aria-checked={theme === value} aria-label={label} title={label} className="segmented__btn" onClick={() => setTheme(value)}>
+        <button key={value} type="button" role="radio" aria-checked={theme === value} aria-label={label} title={label} className="segmented__btn" onClick={() => changeTheme(value)}>
           {theme === value && <motion.span layoutId="theme-pill" className="segmented__pill" transition={spring.snappy} />}
           <Icon width={14} height={14} />
         </button>

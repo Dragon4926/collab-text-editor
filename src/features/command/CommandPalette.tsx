@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArchiveRestore, CornerDownLeft, FileText, Home, HardDriveDownload, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
 import { exportBackup, pickBackup } from '@/lib/export/backup';
+import { toggleTheme } from '@/lib/theme';
 import { toast } from '@/components/ui/Toast';
 import { displayTitle, useWorkspace } from '@/store/workspace';
 import type { Page } from '@/store/types';
@@ -85,7 +86,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
         icon: <ArchiveRestore width={16} height={16} />,
         run: () => pickBackup((r) => (r instanceof Error ? toast(r.message, 'error') : toast(`Imported ${r} pages`))),
       },
-      { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: () => s.setTheme(dark ? 'light' : 'dark') },
+      { id: 'theme', title: dark ? 'Switch to light appearance' : 'Switch to dark appearance', icon: dark ? <Sun width={16} height={16} /> : <Moon width={16} height={16} />, run: toggleTheme },
     ];
     const actionResults = actions
       .map((a) => ({ ...a, section: 'Actions' as const, score: a.id === 'new-doc' && query ? 0 : fuzzyScore(a.title, query) }))

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useWorkspace } from '@/store/workspace';
+import { toggleTheme } from '@/lib/theme';
 import { isMod } from '@/components/ui/Kbd';
 
 /**
@@ -34,8 +35,7 @@ export function useGlobalShortcuts() {
         s.setSidebarOpen(!s.sidebarOpen);
       } else if (isMod(e) && e.shiftKey && key === 'l') {
         e.preventDefault();
-        const dark = document.documentElement.dataset.theme === 'dark';
-        s.setTheme(dark ? 'light' : 'dark');
+        toggleTheme();
       } else if (e.key === 'F2' && s.activeId) {
         // F2 is the Windows "rename" key, as in File Explorer
         e.preventDefault();
