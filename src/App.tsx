@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { useHydrated } from '@/hooks/useHydrated';
 import { seedWorkspace } from '@/store/seed';
 import { useTheme } from '@/hooks/useTheme';
@@ -23,11 +24,15 @@ export function App() {
   if (!hydrated) return null;
 
   return (
-    <AppShell sidebar={<Sidebar />}>
-      <Titlebar />
-      <PageView />
-      <CommandPalette />
-      <Toaster />
-    </AppShell>
+    // reducedMotion="user": framer-motion skips transform/blur animations
+    // (keeping opacity fades) when the OS asks for reduced motion
+    <MotionConfig reducedMotion="user">
+      <AppShell sidebar={<Sidebar />}>
+        <Titlebar />
+        <PageView />
+        <CommandPalette />
+        <Toaster />
+      </AppShell>
+    </MotionConfig>
   );
 }

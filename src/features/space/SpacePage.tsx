@@ -1,13 +1,13 @@
 import { isRedo, isTyping, isUndo, withShortcut } from '@/lib/keys';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
 import { FilePlus2, Frame, Hand, ImagePlus, MousePointer2, PenLine, StickyNote, Type } from 'lucide-react';
 import { useWorkspace } from '@/store/workspace';
 import type { ID, SpaceCard, SpaceCardType, SpaceData, Stroke } from '@/store/types';
 import { useHistory } from '@/hooks/useHistory';
 import { isMod } from '@/components/ui/Kbd';
-import { spring } from '@/lib/motion';
+import { blurFade, spring } from '@/lib/motion';
 import { PAGE_MIME } from '@/components/sidebar/PageTree';
 import { cameraStyles, useCamera } from '@/features/canvas/useCamera';
 import { ZoomControls } from '@/features/canvas/ZoomControls';
@@ -446,15 +446,17 @@ export function SpacePage({ pageId }: { pageId: ID }) {
         </div>
       </div>
 
-      {single?.type === 'note' && (
-        <div className="canvas-chrome canvas-chrome--top space__colors" onPointerDown={(e) => e.stopPropagation()}>
-          <div className="glass-bar">
-            {NOTE_COLORS.map((c) => (
-              <button key={c} type="button" className={`space__color note--${c} ${single.color === c ? 'is-active' : ''}`} aria-label={`${c} note`} onClick={() => handlers.onChange(single.id, { color: c })} />
-            ))}
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {single?.type === 'note' && (
+          <motion.div key="note-colors" className="canvas-chrome canvas-chrome--top space__colors" onPointerDown={(e) => e.stopPropagation()} {...blurFade}>
+            <div className="glass-bar">
+              {NOTE_COLORS.map((c) => (
+                <button key={c} type="button" className={`space__color note--${c} ${single.color === c ? 'is-active' : ''}`} aria-label={`${c} note`} onClick={() => handlers.onChange(single.id, { color: c })} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="canvas-chrome canvas-chrome--bl">
         <ZoomControls zoom={cam.camera.z} onZoomIn={() => cam.zoomBy(1.25)} onZoomOut={() => cam.zoomBy(0.8)} onReset={cam.resetZoom} onFit={() => cam.fit(boundsOf(cards))} />

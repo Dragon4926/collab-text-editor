@@ -7,7 +7,7 @@ import type { ID } from '@/store/types';
 import { PageIcon } from '@/components/ui/PageIcon';
 import { RENAME_EVENT } from '@/hooks/useGlobalShortcuts';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 
 /**
  * A recursive, drag-and-drop page tree.
@@ -120,10 +120,10 @@ function TreeRow({ id, depth }: { id: ID; depth: number }) {
   return (
     <motion.div
       layout="position"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={spring.smooth}
+      initial={{ opacity: 0, height: 0, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, height: 'auto', filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+      exit={{ opacity: 0, height: 0, filter: 'blur(4px)' }}
+      transition={withFocus(spring.smooth)}
       style={{ overflow: 'hidden' }}
     >
       <div

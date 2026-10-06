@@ -7,7 +7,7 @@ import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { Popover } from '@/components/ui/Popover';
 import { ICONS, ICON_COLORS, PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { COVERS, COVER_IDS } from './covers';
 import './PageHeader.css';
 
@@ -97,11 +97,11 @@ export function PageHeader({ pageId, onExitDown, compact }: Props) {
             className="page-header__icon"
             aria-label="Change icon"
             onClick={(e) => setIconAnchor(e.currentTarget)}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 0.5, opacity: 0, filter: 'blur(8px)' }}
+            animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
             whileHover={{ scale: 1.06, rotate: -3 }}
             whileTap={{ scale: 0.95 }}
-            transition={spring.bouncy}
+            transition={withFocus(spring.bouncy)}
           >
             <PageIcon page={page} size={compact ? 30 : 40} />
           </motion.button>

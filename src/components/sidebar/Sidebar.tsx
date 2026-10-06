@@ -24,7 +24,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Kbd } from '@/components/ui/Kbd';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { changeTheme } from '@/lib/theme';
 import { PageTree } from './PageTree';
 import './Sidebar.css';
@@ -96,7 +96,13 @@ function Section({ title, action, children, defaultOpen = true }: { title: strin
       </div>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={spring.smooth} style={{ overflow: 'hidden' }}>
+          <motion.div
+            initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+            animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+            exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+            transition={withFocus(spring.smooth)}
+            style={{ overflow: 'hidden' }}
+          >
             {children}
           </motion.div>
         )}

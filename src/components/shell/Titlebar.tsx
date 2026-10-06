@@ -8,7 +8,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Menu, useMenu, type MenuItem } from '@/components/ui/Menu';
 import { exportPage } from '@/lib/export/exportPage';
 import { KIND_LABEL, PageIcon } from '@/components/ui/PageIcon';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { TrafficLights } from './TrafficLights';
 import './Titlebar.css';
 
@@ -34,7 +34,7 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
   return (
     <header className="titlebar">
       {!sidebarOpen && (
-        <motion.div className="titlebar__lead" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={spring.smooth}>
+        <motion.div className="titlebar__lead" initial={{ opacity: 0, x: -8, filter: 'blur(6px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }} transition={withFocus(spring.smooth)}>
           <TrafficLights />
           <IconButton label="Show sidebar" size="sm" onClick={() => setSidebarOpen(true)}>
             <PanelLeftOpen />

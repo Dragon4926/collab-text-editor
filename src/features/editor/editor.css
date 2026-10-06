@@ -199,7 +199,9 @@
   background: var(--c-glass-strong);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge);
   overflow: hidden;
   transform-origin: top left;
 }
@@ -296,12 +298,13 @@
   align-items: center;
   gap: 1px;
   padding: 4px;
-  animation: bubble-in 180ms var(--ease-out);
+  animation: bubble-in 240ms var(--ease-out);
 }
 @keyframes bubble-in {
   from {
     opacity: 0;
-    transform: translateY(4px) scale(0.97);
+    transform: translateY(6px) scale(0.95);
+    filter: blur(6px);
   }
 }
 /* sub-panels float above the bar so they never cover the selected text */

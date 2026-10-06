@@ -7,7 +7,7 @@ import { useWorkspace } from '@/store/workspace';
 import type { BoardElement, BoardShape, ID, InkPoint, PenKind, ShapeKind, Stroke } from '@/store/types';
 import { useHistory } from '@/hooks/useHistory';
 import { isMod } from '@/components/ui/Kbd';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { cameraStyles, useCamera } from '@/features/canvas/useCamera';
 import { ZoomControls } from '@/features/canvas/ZoomControls';
 import { InkDefs, StrokePath, inkFill } from '@/features/ink/InkLayer';
@@ -461,7 +461,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
 
         <AnimatePresence>
           {tool === 'pen' && (
-            <motion.div className="glass-bar board__pens" initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4 }} transition={spring.snappy}>
+            <motion.div className="glass-bar board__pens" initial={{ opacity: 0, y: -6, scale: 0.97, filter: 'blur(6px)' }} animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }} exit={{ opacity: 0, y: -4, filter: 'blur(4px)' }} transition={withFocus(spring.snappy)}>
               {PEN_ORDER.map((p: PenKind) => (
                 <button key={p} type="button" className={`board__pen ${pen === p ? 'is-active' : ''}`} onClick={() => setPen(p)} title={PENS[p].label}>
                   {PENS[p].label}

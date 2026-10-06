@@ -2,7 +2,7 @@ import { useCallback, useId, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Copy, Trash2 } from 'lucide-react';
 import type { Stroke } from '@/store/types';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import { InkDefs, InkLayer, StrokePath, inkFill } from './InkLayer';
 import { INK_COLORS } from './pens';
 import { useInkCapture } from './useInkCapture';
@@ -68,10 +68,10 @@ export function InkSurface({ strokes, commit, width, height, className = '', rea
           <motion.div
             className="ink-selection-bar"
             style={{ left: `${((box.x + box.w / 2) / width) * 100}%`, top: `${(box.y / height) * 100}%` }}
-            initial={{ opacity: 0, y: 6, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={spring.snappy}
+            initial={{ opacity: 0, y: 6, scale: 0.95, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+            exit={{ opacity: 0, y: 4, filter: 'blur(4px)' }}
+            transition={withFocus(spring.snappy)}
             onPointerDown={(e) => e.stopPropagation()}
           >
             {INK_COLORS.slice(0, 7).map((c) => (

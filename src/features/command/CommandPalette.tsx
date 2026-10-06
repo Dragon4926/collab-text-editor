@@ -8,7 +8,7 @@ import { displayTitle, useWorkspace } from '@/store/workspace';
 import type { Page } from '@/store/types';
 import { PageIcon, KIND_LABEL } from '@/components/ui/PageIcon';
 import { docToText, fuzzyScore } from '@/lib/text';
-import { spring } from '@/lib/motion';
+import { spring, withFocus } from '@/lib/motion';
 import './CommandPalette.css';
 
 interface Result {
@@ -111,15 +111,23 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   let lastSection = '';
 
   return (
-    <motion.div className="palette-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }} onPointerDown={onClose}>
+    // Spotlight-style: the app behind softly defocuses while the palette is open
+    <motion.div
+      className="palette-backdrop"
+      initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+      animate={{ opacity: 1, backdropFilter: 'blur(6px)' }}
+      exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+      transition={{ duration: 0.22 }}
+      onPointerDown={onClose}
+    >
       <motion.div
         className="palette"
         role="dialog"
         aria-label="Command palette"
-        initial={{ opacity: 0, scale: 0.96, y: -12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.98, y: -6, transition: { duration: 0.12 } }}
-        transition={spring.snappy}
+        initial={{ opacity: 0, scale: 0.95, y: -14, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+        exit={{ opacity: 0, scale: 0.97, y: -6, filter: 'blur(8px)', transition: { duration: 0.16 } }}
+        transition={withFocus(spring.snappy)}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="palette__input">
