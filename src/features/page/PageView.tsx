@@ -11,25 +11,45 @@ import { Home } from '@/features/home/Home';
  * open a document, and the canvas code isn't downloaded until you open a
  * canvas. `Suspense` shows a fallback while a chunk loads.
  */
-const DocPage = lazy(() => import('@/features/doc/DocPage').then((m) => ({ default: m.DocPage })));
-const NotebookPage = lazy(() => import('@/features/notebook/NotebookPage').then((m) => ({ default: m.NotebookPage })));
-const SpacePage = lazy(() => import('@/features/space/SpacePage').then((m) => ({ default: m.SpacePage })));
-const BoardPage = lazy(() => import('@/features/board/BoardPage').then((m) => ({ default: m.BoardPage })));
+const loaders = {
+  doc: () => import('@/features/doc/DocPage'),
+  notebook: () => import('@/features/notebook/NotebookPage'),
+  space: () => import('@/features/space/SpacePage'),
+  board: () => import('@/features/board/BoardPage'),
+};
+const DocPage = lazy(() => loaders.doc().then((m) => ({ default: m.DocPage })));
+const NotebookPage = lazy(() => loaders.notebook().then((m) => ({ default: m.NotebookPage })));
+const SpacePage = lazy(() => loaders.space().then((m) => ({ default: m.SpacePage })));
+const BoardPage = lazy(() => loaders.board().then((m) => ({ default: m.BoardPage })));
+
+/**
+ * Warm the chunks once the app is idle, so the first visit to each surface
+ * doesn't wait on the network mid-transition. The initial load stays small;
+ * the rest arrives while the user is reading.
+ */
+export function preloadSurfaces() {
+  const run = () => Object.values(loaders).forEach((load) => void load());
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3000 });
+  else setTimeout(run, 1500);
+}
 import './PageView.css';
 
 /**
  * Chooses the surface for the active page.
  *
- * `AnimatePresence mode="wait"` keeps the outgoing page mounted until its
- * exit animation finishes, then mounts the next one. Keying the motion.div
- * by page id is what tells framer-motion "this is a different page".
+ * Keying the motion.div by page id tells framer-motion "this is a different
+ * page". `AnimatePresence mode="popLayout"` keeps the outgoing page mounted
+ * for its exit animation but *pops it out of the layout* (absolutely
+ * positioned where it was), so the incoming page can animate in at the same
+ * time. Overlapping the two — one defocusing, one sharpening — gives a true
+ * crossfade instead of a fade-out-then-fade-in, and halves the wait.
  */
 export function PageView() {
   const activeId = useWorkspace((s) => s.activeId);
   const kind = useWorkspace((s) => (s.activeId ? s.pages[s.activeId]?.kind : undefined));
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div key={activeId ?? 'home'} className="page-view" variants={pageFade} initial="initial" animate="animate" exit="exit">
         {!activeId || !kind ? (
           <Home />

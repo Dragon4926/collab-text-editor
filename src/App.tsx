@@ -7,7 +7,7 @@ import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { AppShell } from '@/components/shell/AppShell';
 import { Titlebar } from '@/components/shell/Titlebar';
 import { Sidebar } from '@/components/sidebar/Sidebar';
-import { PageView } from '@/features/page/PageView';
+import { PageView, preloadSurfaces } from '@/features/page/PageView';
 import { CommandPalette } from '@/features/command/CommandPalette';
 import { Toaster } from '@/components/ui/Toast';
 
@@ -18,7 +18,9 @@ export function App() {
 
   // populate a tour on the very first launch
   useEffect(() => {
-    if (hydrated) seedWorkspace();
+    if (!hydrated) return;
+    seedWorkspace();
+    preloadSurfaces();
   }, [hydrated]);
 
   if (!hydrated) return null;

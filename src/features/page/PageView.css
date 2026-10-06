@@ -1,5 +1,7 @@
 .page-view {
   position: relative;
+  background: var(--c-paper); /* opaque, so overlapping pages don't double up */
+  transform-origin: 50% 30%;
   flex: 1;
   min-height: 0;
   display: flex;
