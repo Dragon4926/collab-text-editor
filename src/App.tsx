@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useHydrated } from '@/hooks/useHydrated';
+import { seedWorkspace } from '@/store/seed';
 import { useTheme } from '@/hooks/useTheme';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { AppShell } from '@/components/shell/AppShell';
@@ -11,6 +13,11 @@ export function App() {
   const hydrated = useHydrated();
   useTheme();
   useGlobalShortcuts();
+
+  // populate a tour on the very first launch
+  useEffect(() => {
+    if (hydrated) seedWorkspace();
+  }, [hydrated]);
 
   if (!hydrated) return null;
 
