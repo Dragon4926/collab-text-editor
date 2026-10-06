@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkspace } from '@/store/workspace';
 import { pageFade } from '@/lib/motion';
 import { Home } from '@/features/home/Home';
+import { DocPage } from '@/features/doc/DocPage';
 import './PageView.css';
 
 /**
@@ -24,6 +25,11 @@ export function PageView() {
   );
 }
 
-function Surface({ kind }: { id: string; kind: string }) {
-  return <div className="page-view__todo">{kind} surface coming soon</div>;
+function Surface({ id, kind }: { id: string; kind: string }) {
+  switch (kind) {
+    case 'doc':
+      return <DocPage pageId={id} />;
+    default:
+      return <div className="page-view__todo">{kind} surface coming soon</div>;
+  }
 }
