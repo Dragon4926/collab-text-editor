@@ -274,3 +274,140 @@
   border-radius: 4px;
   padding: 0 2px;
 }
+
+/* ---------- Bubble toolbar: a dark HUD, like macOS text tools ---------- */
+.bubble {
+  z-index: 800;
+  position: relative;
+}
+.bubble__bar,
+.bubble__panel {
+  border-radius: var(--r-md);
+  background: rgba(28, 28, 32, 0.9);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.28);
+  color: #f5f5f7;
+}
+.bubble__bar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 4px;
+  animation: bubble-in 180ms var(--ease-out);
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+}
+/* sub-panels float above the bar so they never cover the selected text */
+.bubble__panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  overflow: hidden;
+}
+.bubble__btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  color: rgba(255, 255, 255, 0.82);
+  transition: background-color var(--dur-fast);
+}
+.bubble__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.bubble__btn.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #b3a9ff;
+}
+.bubble__turn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
+}
+.bubble__turn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.bubble__sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.bubble__link {
+  display: flex;
+  width: 300px;
+  gap: 6px;
+  padding: 6px;
+}
+.bubble__link input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: var(--text-sm);
+  outline: none;
+}
+.bubble__link button {
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  background: var(--c-accent);
+  color: #fff;
+  font-size: var(--text-sm);
+}
+.bubble__swatches {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+}
+.bubble__swatches button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.bubble__swatches button:hover {
+  transform: scale(1.15);
+}
+.bubble__swatch-none {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+.bubble__turn-list {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 2px;
+  padding: 6px;
+}
+.bubble__turn-list button {
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+.bubble__turn-list button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.bubble__turn-list button.is-active {
+  background: var(--c-accent);
+  color: #fff;
+}

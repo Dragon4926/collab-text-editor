@@ -4,6 +4,7 @@ import { useWorkspace } from '@/store/workspace';
 import type { ID } from '@/store/types';
 import { createExtensions } from './extensions';
 import { SlashMenu } from './SlashMenu';
+import { BubbleToolbar } from './BubbleToolbar';
 import './editor.css';
 
 interface Props {
@@ -57,6 +58,7 @@ export function DocEditor({ pageId, onReady }: Props) {
     <>
       <EditorContent editor={editor} className="doc-editor" />
       <SlashMenu />
+      {editor && <BubbleToolbar editor={editor} />}
     </>
   );
 }
