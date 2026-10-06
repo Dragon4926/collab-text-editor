@@ -76,7 +76,7 @@ is shared with the previous state. That's why:
 
 * Imported images are downscaled to ≤1600 px WebP before storage.
 * Audio is stored as native Blobs in a separate IndexedDB store, out of the
-  JSON that gets serialised on save.
+  workspace object that gets cloned on every save.
 
 ## Measure, don't guess
 
