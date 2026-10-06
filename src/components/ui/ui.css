@@ -50,14 +50,24 @@
   height: 14px;
 }
 
-/* ---------------- Kbd ---------------- */
+/* ---------------- Kbd: Windows-style key caps ---------------- */
 .kbd {
   display: inline-flex;
-  gap: 1px;
+  gap: 3px;
   font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  color: var(--c-text-4);
-  letter-spacing: 0.02em;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--c-text-3);
+}
+.kbd__key {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-align: center;
+  background: var(--c-fill);
+  box-shadow:
+    inset 0 -1px 0 var(--c-line-strong),
+    0 0 0 0.5px var(--c-line);
 }
 
 /* ---------------- Menu ---------------- */
@@ -90,6 +100,10 @@
 .menu__item.is-hover .kbd,
 .menu__item.is-hover .menu__icon {
   color: rgba(255, 255, 255, 0.85);
+}
+.menu__item.is-hover .kbd__key {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
 }
 .menu__item.is-danger {
   color: var(--c-danger);

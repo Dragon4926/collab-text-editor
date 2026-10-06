@@ -1,3 +1,4 @@
+import { withShortcut } from '@/lib/keys';
 import { useState } from 'react';
 import { useEditorState, type Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
@@ -52,12 +53,12 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
     }),
   });
 
-  const mark = (active: boolean, label: string, Icon: typeof Bold, run: () => void, shortcut?: string) => (
+  const mark = (active: boolean, label: string, Icon: typeof Bold, run: () => void, keys?: string) => (
     <button
       type="button"
       className={`bubble__btn ${active ? 'is-active' : ''}`}
       aria-label={label}
-      title={shortcut ? `${label} (${shortcut})` : label}
+      title={keys ? withShortcut(label, keys) : label}
       aria-pressed={active}
       onClick={run}
     >
@@ -90,11 +91,11 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
           <ChevronDown width={12} height={12} />
         </button>
         <span className="bubble__sep" />
-        {mark(state.bold, 'Bold', Bold, () => editor.chain().focus().toggleBold().run(), '⌘B')}
-        {mark(state.italic, 'Italic', Italic, () => editor.chain().focus().toggleItalic().run(), '⌘I')}
-        {mark(state.underline, 'Underline', Underline, () => editor.chain().focus().toggleUnderline().run(), '⌘U')}
+        {mark(state.bold, 'Bold', Bold, () => editor.chain().focus().toggleBold().run(), 'Mod+B')}
+        {mark(state.italic, 'Italic', Italic, () => editor.chain().focus().toggleItalic().run(), 'Mod+I')}
+        {mark(state.underline, 'Underline', Underline, () => editor.chain().focus().toggleUnderline().run(), 'Mod+U')}
         {mark(state.strike, 'Strikethrough', Strikethrough, () => editor.chain().focus().toggleStrike().run())}
-        {mark(state.code, 'Inline code', Code, () => editor.chain().focus().toggleCode().run(), '⌘E')}
+        {mark(state.code, 'Inline code', Code, () => editor.chain().focus().toggleCode().run(), 'Mod+E')}
         <span className="bubble__sep" />
         {mark(state.highlight, 'Highlight', Highlighter, () => setPanel(panel === 'highlight' ? 'none' : 'highlight'))}
         {mark(state.link, 'Link', Link2, () => {

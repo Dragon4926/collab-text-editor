@@ -38,7 +38,7 @@ export function Sidebar() {
   const create = (kind: PageKind) => setActive(createPage(kind));
 
   const newItems: MenuItem[] = [
-    { label: 'Document', icon: <FileText />, shortcut: 'Mod+N', onSelect: () => create('doc') },
+    { label: 'Document', icon: <FileText />, shortcut: 'Alt+N', onSelect: () => create('doc') },
     { label: 'Spatial space', icon: <Orbit />, onSelect: () => create('space') },
     { label: 'Whiteboard', icon: <Shapes />, onSelect: () => create('board') },
     { label: 'Notebook', icon: <NotebookPen />, onSelect: () => create('notebook') },

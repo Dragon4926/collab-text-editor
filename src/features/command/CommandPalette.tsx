@@ -21,7 +21,7 @@ interface Result {
 }
 
 /**
- * The ⌘K command palette: one input that searches page titles, page *text*
+ * The Ctrl+K command palette: one input that searches page titles, page *text*
  * and app actions. It's the keyboard-first heart of the app — anything you
  * can click, you can also reach from here.
  */
@@ -77,7 +77,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       { id: 'new-board', title: 'New whiteboard', icon: <Shapes width={16} height={16} />, run: create('board') },
       { id: 'new-notebook', title: 'New notebook', icon: <NotebookPen width={16} height={16} />, run: create('notebook') },
       { id: 'home', title: 'Go home', icon: <Home width={16} height={16} />, run: () => s.setActive(null) },
-      { id: 'sidebar', title: 'Toggle sidebar', subtitle: '⌘\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
+      { id: 'sidebar', title: 'Toggle sidebar', subtitle: 'Ctrl+\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
       { id: 'backup', title: 'Export workspace backup', subtitle: 'All pages as one JSON file', icon: <HardDriveDownload width={16} height={16} />, run: exportBackup },
       {
         id: 'restore',

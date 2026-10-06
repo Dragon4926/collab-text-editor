@@ -1,3 +1,4 @@
+import { isRedo, isTyping, isUndo, withShortcut } from '@/lib/keys';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
@@ -134,13 +135,12 @@ export function SpacePage({ pageId }: { pageId: ID }) {
   /* ---------------- keyboard ---------------- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('input, textarea, [contenteditable="true"]') || useWorkspace.getState().paletteOpen) return;
+      if (isTyping(e.target) || useWorkspace.getState().paletteOpen) return;
       const key = e.key.toLowerCase();
       if (isMod(e)) {
-        if (key === 'z') {
+        if (isUndo(e) || isRedo(e)) {
           e.preventDefault();
-          if (e.shiftKey) redo();
+          if (isRedo(e)) redo();
           else undo();
         } else if (key === 'd') {
           e.preventDefault();
@@ -187,8 +187,7 @@ export function SpacePage({ pageId }: { pageId: ID }) {
   /* ---------------- paste images & text ---------------- */
   useEffect(() => {
     const onPaste = async (e: ClipboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('input, textarea, [contenteditable="true"]')) return;
+      if (isTyping(e.target)) return;
       const [cx, cy] = cam.toWorld({ clientX: vp.w / 2 + (cam.viewport.current?.getBoundingClientRect().left ?? 0), clientY: vp.h / 2 + (cam.viewport.current?.getBoundingClientRect().top ?? 0) });
       const file = [...(e.clipboardData?.files ?? [])].find((f) => f.type.startsWith('image/'));
       if (file) {
@@ -407,7 +406,7 @@ export function SpacePage({ pageId }: { pageId: ID }) {
       <div className="canvas-chrome canvas-chrome--top">
         <div className="glass-bar" role="toolbar" aria-label="Space tools">
           {TOOLS.map(({ id, label, key, Icon }) => (
-            <button key={id} type="button" className={`glass-bar__btn ${tool === id ? 'is-active' : ''}`} aria-label={label} title={`${label} (${key.toUpperCase()})`} aria-pressed={tool === id} onClick={() => setTool(id)}>
+            <button key={id} type="button" className={`glass-bar__btn ${tool === id ? 'is-active' : ''}`} aria-label={label} title={withShortcut(label, key.toUpperCase())} aria-pressed={tool === id} onClick={() => setTool(id)}>
               {tool === id && <motion.span layoutId="space-tool" className="glass-bar__pill" transition={spring.snappy} />}
               <Icon width={18} height={18} />
             </button>

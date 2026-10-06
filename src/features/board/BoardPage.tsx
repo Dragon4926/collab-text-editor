@@ -1,3 +1,4 @@
+import { isRedo, isTyping, isUndo, withShortcut } from '@/lib/keys';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { nanoid } from 'nanoid';
@@ -259,12 +260,12 @@ export function BoardPage({ pageId }: { pageId: ID }) {
   /* ---------------- keyboard ---------------- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea, [contenteditable="true"]') || useWorkspace.getState().paletteOpen) return;
+      if (isTyping(e.target) || useWorkspace.getState().paletteOpen) return;
       const key = e.key.toLowerCase();
       if (isMod(e)) {
-        if (key === 'z') {
+        if (isUndo(e) || isRedo(e)) {
           e.preventDefault();
-          const v = e.shiftKey ? history.redo(current()) : history.undo(current());
+          const v = isRedo(e) ? history.redo(current()) : history.undo(current());
           if (v) setElements(v);
         } else if (key === 'a') {
           e.preventDefault();
@@ -403,7 +404,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
       <div className="canvas-chrome canvas-chrome--top board__chrome" data-chrome onPointerDown={(e) => e.stopPropagation()}>
         <div className="glass-bar" role="toolbar" aria-label="Whiteboard tools">
           {TOOLS.map(({ id, label, key, Icon }) => (
-            <button key={id} type="button" className={`glass-bar__btn ${tool === id ? 'is-active' : ''}`} aria-label={label} title={`${label} (${key.toUpperCase()})`} aria-pressed={tool === id} onClick={() => setTool(id)}>
+            <button key={id} type="button" className={`glass-bar__btn ${tool === id ? 'is-active' : ''}`} aria-label={label} title={withShortcut(label, key.toUpperCase())} aria-pressed={tool === id} onClick={() => setTool(id)}>
               {tool === id && <motion.span layoutId="board-tool" className="glass-bar__pill" transition={spring.snappy} />}
               <Icon width={18} height={18} />
             </button>
@@ -420,7 +421,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
             type="button"
             className="glass-bar__btn"
             aria-label="Undo"
-            title="Undo (⌘Z)"
+            title={withShortcut('Undo', 'Mod+Z')}
             disabled={!history.canUndo}
             onClick={() => {
               const v = history.undo(current());
@@ -433,7 +434,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
             type="button"
             className="glass-bar__btn"
             aria-label="Redo"
-            title="Redo (⇧⌘Z)"
+            title={withShortcut('Redo', 'Mod+Y')}
             disabled={!history.canRedo}
             onClick={() => {
               const v = history.redo(current());

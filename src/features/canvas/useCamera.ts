@@ -1,3 +1,4 @@
+import { isTyping } from '@/lib/keys';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { animate } from 'framer-motion';
 import type { Camera } from '@/store/types';
@@ -14,9 +15,9 @@ interface Options {
  *
  * Input mapping (matches Figma / Freeform / tldraw conventions):
  *   trackpad two-finger scroll   → pan
- *   trackpad pinch / ⌘+wheel     → zoom at cursor   (browsers report a pinch
+ *   trackpad pinch / Ctrl+wheel  → zoom at cursor   (browsers report a pinch
  *                                    as a wheel event with ctrlKey = true)
- *   mouse wheel                  → pan vertically (⇧ for horizontal)
+ *   mouse wheel                  → pan vertically (Shift for horizontal)
  *   space + drag / middle drag   → pan
  *   two-finger touch             → pan + pinch zoom
  *
@@ -129,8 +130,7 @@ export function useCamera({ initial, onSettle }: Options) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat) return;
-      const t = e.target as HTMLElement;
-      if (t.closest('input, textarea, [contenteditable="true"]')) return;
+      if (isTyping(e.target)) return;
       e.preventDefault();
       setSpaceDown(true);
     };
