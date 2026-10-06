@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Copy, Trash2 } from 'lucide-react';
 import type { Stroke } from '@/store/types';
 import { spring } from '@/lib/motion';
-import { InkDefs, InkLayer, StrokePath } from './InkLayer';
+import { InkDefs, InkLayer, StrokePath, inkFill } from './InkLayer';
 import { INK_COLORS } from './pens';
 import { useInkCapture } from './useInkCapture';
 import './ink.css';
@@ -75,7 +75,7 @@ export function InkSurface({ strokes, commit, width, height, className = '', rea
             onPointerDown={(e) => e.stopPropagation()}
           >
             {INK_COLORS.slice(0, 7).map((c) => (
-              <button key={c} type="button" className="ink-selection-bar__swatch" style={{ background: c }} aria-label={`Recolor ${c}`} onClick={() => ink.recolorSelection(c)} />
+              <button key={c} type="button" className="ink-selection-bar__swatch" style={{ background: inkFill(c) }} aria-label={`Recolor ${c}`} onClick={() => ink.recolorSelection(c)} />
             ))}
             <span className="ink-selection-bar__sep" />
             <button type="button" aria-label="Duplicate selection" title="Duplicate" onClick={ink.duplicateSelection}>

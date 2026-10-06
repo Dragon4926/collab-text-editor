@@ -5,6 +5,7 @@ import type { PenKind } from '@/store/types';
 import { Popover } from '@/components/ui/Popover';
 import { spring } from '@/lib/motion';
 import { INK_COLORS, PENS, PEN_ORDER, SIZES } from './pens';
+import { inkFill } from './InkLayer';
 import { useInkTool, type InkMode } from './toolStore';
 import './ink.css';
 
@@ -73,7 +74,7 @@ export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan
                 tool.setPen(p);
               }}
             >
-              <PenGlyph pen={p} color={tool.settings[p].color} />
+              <PenGlyph pen={p} color={inkFill(tool.settings[p].color)} />
             </motion.button>
           );
         })}
@@ -91,7 +92,7 @@ export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan
             key={c}
             type="button"
             className={`ink-toolbar__swatch ${current.color === c && tool.mode === 'draw' ? 'is-active' : ''}`}
-            style={{ background: c }}
+            style={{ background: inkFill(c) }}
             aria-label={`Color ${c}`}
             onClick={() => tool.setColor(c)}
           />
@@ -116,14 +117,14 @@ export function InkToolbar({ onUndo, onRedo, canUndo, canRedo, children, showPan
         <div className="pen-settings__sizes">
           {SIZES.map((s) => (
             <button key={s} type="button" className={current.size === s ? 'is-active' : ''} aria-label={`Size ${s}`} onClick={() => tool.setSize(s)}>
-              <span style={{ width: 4 + s * 2.4, height: 4 + s * 2.4, background: current.color }} />
+              <span style={{ width: 4 + s * 2.4, height: 4 + s * 2.4, background: inkFill(current.color) }} />
             </button>
           ))}
         </div>
         <div className="popover__label">Colour</div>
         <div className="pen-settings__colors">
           {INK_COLORS.map((c) => (
-            <button key={c} type="button" className={current.color === c ? 'is-active' : ''} style={{ background: c }} aria-label={`Color ${c}`} onClick={() => tool.setColor(c)} />
+            <button key={c} type="button" className={current.color === c ? 'is-active' : ''} style={{ background: inkFill(c) }} aria-label={`Color ${c}`} onClick={() => tool.setColor(c)} />
           ))}
           <label className="pen-settings__custom" title="Custom colour">
             <input type="color" value={current.color} onChange={(e) => tool.setColor(e.target.value)} aria-label="Custom colour" />

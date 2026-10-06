@@ -57,7 +57,8 @@ export function BoardPage({ pageId }: { pageId: ID }) {
   const setPen = useInkTool((s) => s.setPen);
   const filterId = `board-${useId().replace(/:/g, '')}`;
 
-  const [tool, setTool] = useState<Tool>('pen');
+  // an empty board invites drawing; one with content opens ready to select
+  const [tool, setTool] = useState<Tool>(() => (board?.elements.length ? 'select' : 'pen'));
   const [color, setColor] = useState('#1d1d1f');
   const [size, setSize] = useState(2);
   const [fill, setFill] = useState(false);
@@ -409,7 +410,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
           ))}
           <span className="glass-bar__sep" />
           {INK_COLORS.slice(0, 7).map((c) => (
-            <button key={c} type="button" className={`board__swatch ${color === c ? 'is-active' : ''}`} style={{ background: c }} aria-label={`Color ${c}`} onClick={() => applyColor(c)} />
+            <button key={c} type="button" className={`board__swatch ${color === c ? 'is-active' : ''}`} style={{ background: inkFill(c) }} aria-label={`Color ${c}`} onClick={() => applyColor(c)} />
           ))}
           <span className="glass-bar__sep" />
           <button type="button" className={`glass-bar__btn ${fill ? 'is-on' : ''}`} aria-label="Fill shapes" title="Fill shapes" aria-pressed={fill} onClick={() => setFill(!fill)}>
