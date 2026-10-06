@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Copy, MoreHorizontal, PanelLeftOpen, Star, Trash2 } from 'lucide-react';
 import { ancestry, displayTitle, useWorkspace } from '@/store/workspace';
@@ -41,10 +42,14 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
         {crumbs.map((p, i) => (
           <span key={p.id} className="titlebar__crumb">
             {i > 0 && <ChevronRight width={12} height={12} className="titlebar__sep" />}
-            <button type="button" onClick={() => setActive(p.id)} aria-current={i === crumbs.length - 1 ? 'page' : undefined}>
-              <PageIcon page={p} size={14} />
-              <span>{displayTitle(p)}</span>
-            </button>
+            {i === crumbs.length - 1 ? (
+              <CurrentTitle id={p.id} />
+            ) : (
+              <button type="button" onClick={() => setActive(p.id)}>
+                <PageIcon page={p} size={14} />
+                <span>{displayTitle(p)}</span>
+              </button>
+            )}
           </span>
         ))}
         {page && <span className="titlebar__kind">{KIND_LABEL[page.kind]}</span>}
@@ -81,5 +86,37 @@ export function Titlebar({ children }: { children?: React.ReactNode }) {
         </div>
       )}
     </header>
+  );
+}
+
+/**
+ * The current page's crumb doubles as a rename field (click to edit), which
+ * is how canvases — which have no big header — get their titles.
+ */
+function CurrentTitle({ id }: { id: string }) {
+  const page = useWorkspace((s) => s.pages[id]);
+  const updatePage = useWorkspace((s) => s.updatePage);
+  const [editing, setEditing] = useState(false);
+  if (!page) return null;
+  return editing ? (
+    <span className="titlebar__rename">
+      <PageIcon page={page} size={14} />
+      <input
+        autoFocus
+        value={page.title}
+        placeholder={displayTitle({ ...page, title: '' })}
+        size={Math.max(8, page.title.length + 1)}
+        aria-label="Rename page"
+        onFocus={(e) => e.currentTarget.select()}
+        onChange={(e) => updatePage(id, { title: e.target.value })}
+        onBlur={() => setEditing(false)}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === 'Escape') && e.currentTarget.blur()}
+      />
+    </span>
+  ) : (
+    <button type="button" aria-current="page" title="Rename" onClick={() => setEditing(true)}>
+      <PageIcon page={page} size={14} />
+      <span>{displayTitle(page)}</span>
+    </button>
   );
 }
