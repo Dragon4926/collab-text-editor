@@ -5,6 +5,8 @@ import { TaskItem, TaskList } from '@tiptap/extension-list';
 import Highlight from '@tiptap/extension-highlight';
 import Typography from '@tiptap/extension-typography';
 import { SlashCommand } from './SlashCommand';
+import { Callout } from './Callout';
+import { CodeBlock } from './codeBlock';
 
 /**
  * The editor's schema is the sum of its extensions. Each extension
@@ -15,6 +17,7 @@ export function createExtensions(): Extensions {
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
+      codeBlock: false, // replaced by the highlighted CodeBlock below
       link: { openOnClick: false, autolink: true, defaultProtocol: 'https' },
       dropcursor: { color: 'var(--c-accent)', width: 2 },
     }),
@@ -31,5 +34,7 @@ export function createExtensions(): Extensions {
     // smart quotes, em-dashes, arrows (->), ellipses…
     Typography,
     SlashCommand,
+    Callout,
+    CodeBlock,
   ];
 }

@@ -1,6 +1,7 @@
 import type { Editor, Range } from '@tiptap/react';
 import {
   Code2,
+  Info,
   Heading1,
   Heading2,
   Heading3,
@@ -123,6 +124,15 @@ export const BLOCK_COMMANDS: BlockCommand[] = [
     keywords: ['hr', 'rule', 'separator', 'line'],
     hint: '---',
     run: (e, r) => base(e, r).setHorizontalRule().run(),
+  },
+  {
+    id: 'callout',
+    title: 'Callout',
+    description: 'Make a note stand out',
+    group: 'Basic blocks',
+    icon: Info,
+    keywords: ['note', 'info', 'warning', 'tip', 'aside'],
+    run: (e, r) => base(e, r).setCallout('info').run(),
   },
   {
     id: 'code',
