@@ -1,0 +1,189 @@
+/*
+ * Typography for documents. ProseMirror renders plain semantic HTML
+ * (<h1>, <ul data-type="taskList">, <mark>…) inside .prose, so all styling
+ * is ordinary CSS against those elements.
+ */
+.doc-editor {
+  width: 100%;
+}
+
+.prose,
+.prose:focus-visible {
+  outline: none;
+  font-size: var(--text-body);
+  line-height: 1.65;
+  color: var(--c-text);
+  caret-color: var(--c-accent);
+  padding-bottom: 30vh; /* room to scroll the last line to eye level */
+}
+
+.prose > * + * {
+  margin-top: 0.4em;
+}
+.prose p {
+  margin: 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin: 1.4em 0 0.2em;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+}
+.prose h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+.prose h2 {
+  font-size: var(--text-xl);
+  font-weight: 650;
+}
+.prose h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--c-accent-text);
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent-soft);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  transition: text-decoration-color var(--dur-fast);
+}
+.prose a:hover {
+  text-decoration-color: var(--c-accent);
+}
+
+.prose strong {
+  font-weight: 650;
+}
+
+.prose mark {
+  background: var(--c-highlight);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+  box-decoration-break: clone;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  background: var(--c-fill-hover);
+  color: var(--c-danger);
+}
+
+.prose blockquote {
+  margin: 0.8em 0;
+  padding: 0.1em 0 0.1em 1em;
+  border-left: 3px solid var(--c-text);
+  font-size: 1.05em;
+}
+
+.prose hr {
+  border: 0;
+  height: 1px;
+  margin: 1.6em 0;
+  background: var(--c-line-strong);
+}
+.prose hr.ProseMirror-selectednode {
+  background: var(--c-accent);
+}
+
+/* ---------- Lists ---------- */
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+  margin: 0.2em 0;
+}
+.prose li > p {
+  margin: 0;
+}
+.prose li::marker {
+  color: var(--c-text-3);
+}
+
+/* Task lists: checkbox + content in a row */
+.prose ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.prose ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+}
+.prose ul[data-type='taskList'] li > label {
+  flex-shrink: 0;
+  margin-top: 0.22em;
+  user-select: none;
+}
+.prose ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+}
+.prose ul[data-type='taskList'] input[type='checkbox'] {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0;
+  border-radius: 5px;
+  border: 1.5px solid var(--c-line-strong);
+  background: var(--c-paper-raised);
+  transition:
+    background-color var(--dur-fast),
+    border-color var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+.prose ul[data-type='taskList'] input[type='checkbox']:active {
+  transform: scale(0.85);
+}
+.prose ul[data-type='taskList'] input[type='checkbox']:checked {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+.prose ul[data-type='taskList'] input[type='checkbox']:checked::after {
+  content: '';
+  width: 0.28em;
+  height: 0.52em;
+  margin-top: -0.12em;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  animation: check-pop var(--dur-med) var(--ease-out);
+}
+.prose ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: var(--c-text-4);
+  text-decoration: line-through;
+  text-decoration-color: var(--c-text-4);
+  transition: color var(--dur-med);
+}
+
+@keyframes check-pop {
+  from {
+    transform: rotate(45deg) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* ---------- Placeholder ----------
+ * The Placeholder extension adds .is-empty + data-placeholder to the empty
+ * block under the cursor; we render the hint with a ::before pseudo element
+ * so it never becomes part of the document.
+ */
+.prose .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--c-text-4);
+  pointer-events: none;
+}
