@@ -4,6 +4,7 @@ import { pageFade } from '@/lib/motion';
 import { Home } from '@/features/home/Home';
 import { DocPage } from '@/features/doc/DocPage';
 import { NotebookPage } from '@/features/notebook/NotebookPage';
+import { SpacePage } from '@/features/space/SpacePage';
 import './PageView.css';
 
 /**
@@ -30,6 +31,8 @@ function Surface({ id, kind }: { id: string; kind: string }) {
   switch (kind) {
     case 'doc':
       return <DocPage pageId={id} />;
+    case 'space':
+      return <SpacePage pageId={id} />;
     case 'notebook':
       return <NotebookPage pageId={id} />;
     default:
