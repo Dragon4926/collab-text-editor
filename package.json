@@ -11,8 +11,14 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
+    "framer-motion": "^14.0.0",
+    "idb-keyval": "^6.3.0",
+    "immer": "^11.1.21",
+    "lucide-react": "^1.52.0",
+    "nanoid": "^6.0.2",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
