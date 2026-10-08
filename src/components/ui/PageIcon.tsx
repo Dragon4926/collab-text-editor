@@ -7,6 +7,7 @@ import {
   Coffee,
   Compass,
   FileText,
+  FileType,
   Flame,
   Flower2,
   Gem,
@@ -78,6 +79,7 @@ export const KIND_ICON: Record<PageKind, LucideIcon> = {
   space: Orbit,
   board: Shapes,
   notebook: NotebookPen,
+  pdf: FileType,
 };
 
 export const KIND_LABEL: Record<PageKind, string> = {
@@ -85,6 +87,7 @@ export const KIND_LABEL: Record<PageKind, string> = {
   space: 'Spatial space',
   board: 'Whiteboard',
   notebook: 'Notebook',
+  pdf: 'PDF',
 };
 
 interface Props {
@@ -94,7 +97,8 @@ interface Props {
 }
 
 export function PageIcon({ page, size = 16, className }: Props) {
-  const Icon = (page.icon && ICONS[page.icon.name]) || KIND_ICON[page.kind];
+  // own-property check: a name like "constructor" must not reach Object.prototype
+  const Icon = (page.icon && Object.hasOwn(ICONS, page.icon.name) && ICONS[page.icon.name]) || KIND_ICON[page.kind];
   return (
     <Icon
       className={className}

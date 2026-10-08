@@ -1,8 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkspace } from '@/store/workspace';
-import { spring, withFocus } from '@/lib/motion';
-import { Aurora } from './Aurora';
+import { spring } from '@/lib/motion';
 import './AppShell.css';
 
 const SIDEBAR_W = 260; // keep in sync with --sidebar-w
@@ -13,8 +12,8 @@ interface Props {
 }
 
 /**
- * The window frame: aurora backdrop, a glass sidebar and an opaque content
- * area. The sidebar's width is animated with a spring rather than a CSS
+ * The window frame: a sidebar tinted with a soft aurora, and an opaque
+ * content area. Both paint their own solid backgrounds — see AppShell.css. The sidebar's width is animated with a spring rather than a CSS
  * transition so that toggling it repeatedly never "jumps".
  */
 export function AppShell({ sidebar, children }: Props) {
@@ -31,26 +30,30 @@ export function AppShell({ sidebar, children }: Props) {
 
   return (
     <>
-      <Aurora />
       <div className="shell">
         <motion.aside
           className="shell__sidebar"
           initial={false}
-          // the sidebar defocuses as it folds away, and sharpens as it returns
-          animate={{ width: open ? SIDEBAR_W : 0, opacity: open ? 1 : 0, filter: open ? 'blur(0px)' : 'blur(8px)', transitionEnd: open ? { filter: 'none' } : undefined }}
-          transition={withFocus(spring.smooth)}
-          aria-hidden={!open}
+          // only width animates on the panel itself. A blur filter here would
+          // put the whole sidebar on a fresh compositing layer every frame of
+          // the spring — the source of the open/close flicker on Windows.
+          animate={{ width: open ? SIDEBAR_W : 0 }}
+          transition={spring.smooth}
+          // closed: out of the tab order and the accessibility tree
+          inert={!open}
         >
-          <div className="shell__sidebar-inner">{sidebar}</div>
+          <motion.div className="shell__sidebar-inner" initial={false} animate={{ opacity: open ? 1 : 0 }} transition={{ duration: open ? 0.24 : 0.12 }}>
+            {sidebar}
+          </motion.div>
         </motion.aside>
         <main className="shell__main">{children}</main>
         <AnimatePresence>
           {narrow && open && (
             <motion.div
               className="shell__scrim"
-              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-              animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
-              exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
             />
           )}

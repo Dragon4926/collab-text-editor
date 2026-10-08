@@ -3,6 +3,7 @@ import { strokePath, unionBounds } from '@/features/ink/geometry';
 import { PENS } from '@/features/ink/pens';
 import { elementBounds, diamondPath, TEXT_LINE } from '@/features/board/boardModel';
 import { PAPER_TINTS, SHEET_H, SHEET_W } from '@/features/notebook/paper';
+import { safeColor } from '@/lib/sanitize';
 
 /**
  * Build standalone SVG files from ink data.
@@ -13,11 +14,12 @@ import { PAPER_TINTS, SHEET_H, SHEET_W } from '@/features/notebook/paper';
  * viewer (and converts cleanly to PNG).
  */
 
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 function strokeSvg(s: Stroke, black = '#1d1d1f', darkPaper = false) {
   const pen = PENS[s.pen];
-  const fill = s.color.toLowerCase() === '#1d1d1f' ? black : s.color;
+  // colours are interpolated into attributes, so only well-formed hex gets through
+  const fill = s.color.toLowerCase() === '#1d1d1f' ? black : safeColor(s.color);
   const hl = pen.blend === 'multiply';
   const blend = hl ? ` style="mix-blend-mode:${darkPaper ? 'screen' : 'multiply'}"` : '';
   const opacity = hl && darkPaper ? 0.8 : pen.opacity;
@@ -41,30 +43,30 @@ export function boardSvg(elements: BoardElement[], background = '#ffffff'): stri
   const y = box.y - pad;
   const w = box.w + pad * 2;
   const h = box.h + pad * 2;
-  const font = `font-family="-apple-system, 'Helvetica Neue', sans-serif"`;
+  const font = `font-family="Inter, 'Segoe UI', sans-serif"`;
   const parts = elements.map((el) => {
     switch (el.type) {
       case 'stroke':
         return strokeSvg(el.stroke);
       case 'shape': {
-        const fill = el.fill ? `${el.color}29` : 'none'; // 29 hex ≈ 16% alpha
-        const attrs = `stroke="${el.color}" stroke-width="2.5" fill="${fill}"`;
+        const fill = el.fill ? `${safeColor(el.color)}29` : 'none'; // 29 hex ≈ 16% alpha
+        const attrs = `stroke="${safeColor(el.color)}" stroke-width="2.5" fill="${fill}"`;
         const shape =
           el.shape === 'rect'
             ? `<rect x="${el.x}" y="${el.y}" width="${el.w}" height="${el.h}" rx="${Math.min(14, el.w / 4, el.h / 4)}" ${attrs}/>`
             : el.shape === 'ellipse'
               ? `<ellipse cx="${el.x + el.w / 2}" cy="${el.y + el.h / 2}" rx="${el.w / 2}" ry="${el.h / 2}" ${attrs}/>`
               : `<path d="${diamondPath(el.x, el.y, el.w, el.h)}" ${attrs}/>`;
-        const label = el.text ? `<text x="${el.x + el.w / 2}" y="${el.y + el.h / 2}" fill="${el.color}" font-size="18" font-weight="500" text-anchor="middle" dominant-baseline="central" ${font}>${esc(el.text)}</text>` : '';
+        const label = el.text ? `<text x="${el.x + el.w / 2}" y="${el.y + el.h / 2}" fill="${safeColor(el.color)}" font-size="18" font-weight="500" text-anchor="middle" dominant-baseline="central" ${font}>${esc(el.text)}</text>` : '';
         return shape + label;
       }
       case 'arrow': {
         const a = Math.atan2(el.y2 - el.y1, el.x2 - el.x1);
         const hd = (d: number) => `${el.x2 - 16 * Math.cos(a + d)},${el.y2 - 16 * Math.sin(a + d)}`;
-        return `<line x1="${el.x1}" y1="${el.y1}" x2="${el.x2}" y2="${el.y2}" stroke="${el.color}" stroke-width="2.5" stroke-linecap="round"/><polyline points="${hd(0.5)} ${el.x2},${el.y2} ${hd(-0.5)}" fill="none" stroke="${el.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+        return `<line x1="${el.x1}" y1="${el.y1}" x2="${el.x2}" y2="${el.y2}" stroke="${safeColor(el.color)}" stroke-width="2.5" stroke-linecap="round"/><polyline points="${hd(0.5)} ${el.x2},${el.y2} ${hd(-0.5)}" fill="none" stroke="${safeColor(el.color)}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
       }
       case 'text':
-        return `<text x="${el.x}" y="${el.y}" fill="${el.color}" font-size="${el.size}" font-weight="500" ${font}>${el.text
+        return `<text x="${el.x}" y="${el.y}" fill="${safeColor(el.color)}" font-size="${el.size}" font-weight="500" ${font}>${el.text
           .split('\n')
           .map((l, i) => `<tspan x="${el.x}" dy="${i === 0 ? el.size : el.size * TEXT_LINE}">${esc(l) || ' '}</tspan>`)
           .join('')}</text>`;

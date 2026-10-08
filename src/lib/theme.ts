@@ -1,4 +1,4 @@
-import { flushSync } from 'react-dom';
+import { withViewTransition } from './viewTransition';
 import { useWorkspace } from '@/store/workspace';
 import type { ThemePref } from '@/store/types';
 
@@ -12,7 +12,7 @@ import type { ThemePref } from '@/store/types';
  * DOM, it takes a screenshot of the new page, then animates between the two
  * as images (see the ::view-transition rules in global.css).
  *
- * `flushSync` forces React to render the new theme *inside* the callback, so
+ * withViewTransition renders the new theme with `flushSync` *inside* the callback, so
  * the "after" screenshot already shows it. Browsers without the API (or
  * users who prefer reduced motion) just switch instantly.
  */
@@ -27,15 +27,10 @@ const resolve = (pref: ThemePref): 'light' | 'dark' =>
 export function changeTheme(pref: ThemePref) {
   target = resolve(pref);
   const apply = () => {
-    flushSync(() => useWorkspace.getState().setTheme(pref));
+    useWorkspace.getState().setTheme(pref);
     target = null;
   };
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!document.startViewTransition || reduce) {
-    apply();
-    return;
-  }
-  document.startViewTransition(apply);
+  withViewTransition('theme', apply);
 }
 
 /** Toggle between light and dark based on what's currently shown. */

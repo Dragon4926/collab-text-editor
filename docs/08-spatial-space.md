@@ -8,6 +8,14 @@ draw in, images, and **live page cards** — a window onto any document or
 notebook that updates as you edit it. Drag from a card's handle to connect it
 to another; a minimap shows where you are.
 
+Cards snap to each other's edges and centres (pink **smart guides** show
+the match) or to the dot grid; hold Alt to place freely. A contextual bar
+offers note colours, align and distribute, bring to front / send to back,
+duplicate and delete. Connectors can be labelled (double-click or Enter),
+dashed or reversed. Arrow keys nudge (Shift = one grid step), Ctrl+C / X / V
+copy cards between spaces, Ctrl+2 zooms to the selection, and every change —
+including typing in a note and drawing in a sketch card — can be undone.
+
 ![Spatial space](images/spatial-space.png)
 
 ## Concepts
@@ -41,6 +49,20 @@ of adding deltas avoids accumulating rounding errors.
 
 A move is only recorded in undo history once the pointer has travelled 3
 screen pixels, so a simple click doesn't create an empty undo step.
+
+### Snapping and smart guides
+
+`snapBox` in `spaceModel.ts` takes the moving selection's box and, per axis,
+compares its three lines (start, centre, end) with the three lines of every
+other nearby card. The closest match within 6 *screen* pixels wins and
+becomes a guide to draw; with no match, the box snaps to the 24-unit grid.
+Each axis is solved separately, so you can align to one card horizontally
+and another vertically. The threshold is divided by the zoom so snapping
+feels the same at every scale, and guides use
+`vector-effect: non-scaling-stroke` to stay a hairline.
+
+Writes during a drag are coalesced with `requestAnimationFrame` — pointer
+events can outpace the display, and only the latest position matters.
 
 ### Frames
 
@@ -95,12 +117,14 @@ world coordinates and centres the camera there.
 | `features/space/SpacePage.tsx` | controller: tools, gestures, keyboard, drop, paste, undo |
 | `features/space/SpaceCard.tsx` | card views + live page preview |
 | `features/space/spaceModel.ts` | card factory, rect helpers, connector geometry |
-| `features/space/Edges.tsx` | connectors |
+| `features/space/Edges.tsx` | connectors and their labels |
+| `features/space/SelectionBar.tsx` | contextual toolbars for cards and connectors |
 | `features/space/Minimap.tsx` | overview |
 
 ## Try it
 
-1. Let users label edges: double-click an edge to edit `edge.label` and render
-   it at the curve's midpoint (for a cubic Bézier, `t = 0.5`).
-2. Snap cards to the 24-unit grid while dragging with Alt held.
+1. Show the gap between neighbouring cards while dragging, Figma-style, when
+   it equals another gap in the row ("equal spacing" guides).
+2. Let a connector attach to a specific side of a card instead of the
+   nearest border point.
 3. Add an "auto-arrange" command that lays selected cards out in a grid.

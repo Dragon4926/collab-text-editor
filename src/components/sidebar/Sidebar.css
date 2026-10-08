@@ -1,4 +1,6 @@
-.sidebar {
+/* not ".sidebar": PDF.js's stylesheet (pdf_viewer.css) styles every .sidebar as its own
+   thumbnail panel — a dark, bordered, 239px box drawn over ours */
+.app-sidebar {
   display: flex;
   flex-direction: column;
   height: 100%;

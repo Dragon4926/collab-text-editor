@@ -310,7 +310,8 @@
 .space-edge__hit {
   fill: none;
   stroke: transparent;
-  stroke-width: 16;
+  /* ~16 screen px at any zoom, so thin connectors stay easy to grab */
+  stroke-width: calc(16px * var(--inv-z, 1));
   pointer-events: stroke;
   cursor: pointer;
 }
@@ -334,6 +335,55 @@
   stroke-dasharray: 6 6;
   animation: lasso-march 0.6s linear infinite;
 }
+/* labels sit on the curve's midpoint, in world space */
+.space-edge__label {
+  position: absolute;
+  z-index: 1;
+  translate: -50% -50%;
+  max-width: 240px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-canvas);
+  box-shadow: var(--shadow-hairline);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--c-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.space-edge__label.is-selected {
+  color: var(--c-accent-text);
+  box-shadow: 0 0 0 1.5px var(--c-accent);
+}
+.space-edge__label--editing {
+  border: 0;
+  outline: none;
+  text-align: center;
+  font: inherit;
+  font-size: 13px;
+  color: var(--c-text);
+  box-shadow: 0 0 0 2px var(--c-accent);
+  user-select: text;
+  cursor: text;
+}
+
+/* smart guides while dragging: a hairline at any zoom */
+.space-guides {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100000;
+  overflow: visible;
+  pointer-events: none;
+}
+.space-guides line {
+  stroke: var(--c-guide);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
 .space-arrow path {
   stroke: var(--c-text-3);
 }
@@ -342,8 +392,16 @@
 }
 
 /* ---------------- Chrome ---------------- */
-.space__colors {
+.space__context {
   top: 70px;
+}
+.glass-bar__btn--sm {
+  width: 32px;
+  height: 32px;
+}
+.glass-bar__btn.is-on {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-text);
 }
 .space__color {
   width: 26px;

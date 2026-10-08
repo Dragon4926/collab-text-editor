@@ -56,7 +56,13 @@ URL.
 ### Backups
 
 A backup is `{ app: 'lumen', version: 1, exportedAt, pages }` as JSON.
-Importing validates the shape, then merges pages by id. The `version` field
+A backup is *untrusted input* — it may be hand-edited or come from someone
+else — and because the workspace is persisted, one malformed value would
+crash Lumen on every launch. So importing rebuilds each page field by field
+(`lib/sanitize.ts`): ids must look like ids (and never `__proto__`), colours
+must be hex, images must be embedded `data:image/…`, numbers are clamped,
+unknown kinds and icons are dropped, and parents that don't exist (or form a
+cycle) are reset to the root. Then pages are merged by id. The `version` field
 leaves room for future migrations. Voice-memo audio lives in a separate blob
 store and isn't included (a good exercise below).
 

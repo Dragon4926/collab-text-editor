@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { nanoid } from 'nanoid';
 import type { InkPoint, Stroke } from '@/store/types';
-import { hitStroke, strokeBounds, strokeInLasso, translateStroke, unionBounds, type Box } from './geometry';
+import { strokeBounds, strokeInLasso, sweepHitsStroke, translateStroke, unionBounds, type Box } from './geometry';
 import { useInkTool } from './toolStore';
 import { recognizeShape } from './shapes';
 
@@ -36,25 +36,46 @@ interface Options {
  *
  * • A whole gesture (one erase swipe, one lasso drag) is committed as *one*
  *   history entry, so undo reverses the gesture, not each pointermove.
+ *
+ * • **Preview, then commit.** While erasing or moving, the working strokes
+ *   live in local state (repainted at most once per frame) and are written
+ *   to the owner only on pointer-up. Writing on every hit used to run a
+ *   store update — and for sketch blocks a whole ProseMirror transaction —
+ *   several times per pointermove, which is what made the eraser lag.
+ *
+ * • The eraser cursor is moved by writing straight to the SVG circle's
+ *   attributes, so hovering doesn't re-render the surface at all.
  */
 export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Options) {
   const tool = useInkTool();
   const [live, setLive] = useState<Stroke | null>(null);
   const [lasso, setLasso] = useState<number[][] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [eraserAt, setEraserAt] = useState<[number, number] | null>(null);
+  /**
+   * Strokes shown during an erase / move gesture, before they're committed,
+   * tagged with the strokes they were derived from. The preview stays up
+   * after pointer-up until the owner's new strokes arrive — a sketch block
+   * commits through ProseMirror and re-renders a tick later, and clearing
+   * the preview early would flash the erased strokes back for a frame.
+   */
+  const [preview, setPreview] = useState<{ base: Stroke[]; strokes: Stroke[] } | null>(null);
+  const eraserRef = useRef<SVGCircleElement>(null);
+  const frame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   const gesture = useRef<{
     kind: 'draw' | 'erase' | 'lasso' | 'move' | null;
     before: Stroke[];
     working: Stroke[];
     start: [number, number];
+    /** last eraser position, so each move erases along the swept path */
+    last: [number, number];
     points: InkPoint[];
     /** draw-and-hold: where the pen last "settled", and the pending timer */
     anchor: [number, number];
     hold?: ReturnType<typeof setTimeout>;
     snapped: boolean;
-  }>({ kind: null, before: [], working: [], start: [0, 0], points: [], anchor: [0, 0], snapped: false });
+  }>({ kind: null, before: [], working: [], start: [0, 0], last: [0, 0], points: [], anchor: [0, 0], snapped: false });
 
   /**
    * Draw-and-hold. Every time the pen moves more than a couple of units we
@@ -77,10 +98,24 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
     }, 550);
   };
 
+  const shown = preview && preview.base === strokes ? preview.strokes : strokes;
+  useEffect(() => {
+    if (preview && preview.base !== strokes) setPreview(null);
+  }, [preview, strokes]);
+
   const selectionBox: Box | null = useMemo(() => {
     if (selected.size === 0) return null;
-    return unionBounds(strokes.filter((s) => selected.has(s.id)).map((s) => strokeBounds(s.points, 6)));
-  }, [strokes, selected]);
+    return unionBounds(shown.filter((s) => selected.has(s.id)).map((s) => strokeBounds(s.points, 6)));
+  }, [shown, selected]);
+
+  /** repaint the working strokes on the next frame (coalescing many moves) */
+  const schedulePreview = () => {
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      setPreview({ base: gesture.current.before, strokes: gesture.current.working });
+    });
+  };
 
   const pointFrom = (e: { clientX: number; clientY: number; pressure: number; pointerType: string }): InkPoint => {
     const [x, y] = toLocal(e);
@@ -122,7 +157,8 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
         setLive({ id: nanoid(8), pen: tool.pen, color, size, points: [pt] });
       } else if (mode === 'erase') {
         g.kind = 'erase';
-        eraseAt(pt[0], pt[1]);
+        g.last = [pt[0], pt[1]];
+        eraseAlong(pt[0], pt[1]);
       } else if (mode === 'lasso') {
         g.kind = 'lasso';
         setLasso([[pt[0], pt[1]]]);
@@ -131,13 +167,24 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
     [strokes, tool, selectionBox, toLocal],
   );
 
-  const eraseAt = (x: number, y: number) => {
+  /** erase everything the eraser touched on its way from the last sample to (x, y) */
+  const eraseAlong = (x: number, y: number) => {
     const g = gesture.current;
-    const next = g.working.filter((s) => !hitStroke(s, x, y, eraserRadius));
+    const [lx, ly] = g.last;
+    g.last = [x, y];
+    const next = g.working.filter((s) => !sweepHitsStroke(s, lx, ly, x, y, eraserRadius));
     if (next.length !== g.working.length) {
       g.working = next;
-      commit(next, g.before);
+      schedulePreview();
     }
+  };
+
+  const moveEraserCursor = (x: number, y: number) => {
+    const c = eraserRef.current;
+    if (!c) return;
+    c.setAttribute('cx', String(x));
+    c.setAttribute('cy', String(y));
+    c.style.visibility = 'visible';
   };
 
   const onPointerMove = useCallback(
@@ -145,7 +192,7 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
       const g = gesture.current;
       if (tool.mode === 'erase' || g.kind === 'erase') {
         const [x, y] = toLocal(e);
-        setEraserAt([x, y]);
+        moveEraserCursor(x, y);
       }
       if (!g.kind) return;
       const native = e.nativeEvent as PointerEvent;
@@ -160,7 +207,7 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
       } else if (g.kind === 'erase') {
         for (const ev of events.length ? events : [native]) {
           const [x, y] = toLocal(ev);
-          eraseAt(x, y);
+          eraseAlong(x, y);
         }
       } else if (g.kind === 'lasso') {
         const [x, y] = toLocal(e);
@@ -170,7 +217,7 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
         const dx = x - g.start[0];
         const dy = y - g.start[1];
         g.working = g.before.map((s) => (selected.has(s.id) ? translateStroke(s, dx, dy) : s));
-        commit(g.working, g.before);
+        schedulePreview();
       }
     },
     [tool.mode, toLocal, selected],
@@ -187,11 +234,19 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
     } else if (g.kind === 'lasso' && lasso) {
       setSelected(new Set(strokes.filter((s) => strokeInLasso(s, lasso)).map((s) => s.id)));
       setLasso(null);
+    } else if (g.kind === 'erase' || g.kind === 'move') {
+      // one write for the whole gesture
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+      if (g.working !== g.before) commit(g.working, g.before);
+      else setPreview(null);
     }
     g.kind = null;
   }, [live, lasso, strokes, commit]);
 
-  const onPointerLeave = useCallback(() => setEraserAt(null), []);
+  const onPointerLeave = useCallback(() => {
+    if (eraserRef.current) eraserRef.current.style.visibility = 'hidden';
+  }, []);
 
   /* ----- selection actions ----- */
   const deleteSelection = () => {
@@ -215,11 +270,13 @@ export function useInkCapture({ strokes, commit, toLocal, eraserRadius = 8 }: Op
 
   return {
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onPointerLeave },
+    /** what to draw: the in-progress gesture's strokes, or the committed ones */
+    strokes: shown,
     live,
     lasso,
     selected,
     selectionBox,
-    eraserAt,
+    eraserRef,
     mode: tool.mode,
     deleteSelection,
     recolorSelection,

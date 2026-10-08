@@ -11,12 +11,13 @@
  *   'space'    | infinite spatial canvas         | space
  *   'board'    | infinite whiteboard (shapes+ink)| board
  *   'notebook' | paged paper for handwriting     | notebook
+ *   'pdf'      | reader with highlights          | pdf
  *
  * Content is plain JSON so the whole workspace can be serialised to
  * IndexedDB (and exported) without custom encoders.
  */
 
-export type PageKind = 'doc' | 'space' | 'board' | 'notebook';
+export type PageKind = 'doc' | 'space' | 'board' | 'notebook' | 'pdf';
 
 export type ID = string;
 
@@ -72,6 +73,10 @@ export interface SpaceCard {
   strokes?: Stroke[];
   /** small random tilt for sticky notes, in degrees */
   tilt?: number;
+  /** for 'page' cards onto a PDF: the card has grown into an in-place reader */
+  reading?: boolean;
+  /** for notes pinned from a PDF: where the quote came from */
+  source?: { pageId: ID; page: number };
 }
 
 export interface SpaceEdge {
@@ -188,6 +193,35 @@ export interface Page {
   space?: SpaceData;
   board?: BoardData;
   notebook?: NotebookData;
+  pdf?: PdfData;
+}
+
+/* ------------------------------------------------------------------ */
+/* PDF                                                                 */
+/* ------------------------------------------------------------------ */
+
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink';
+
+export interface PdfHighlight {
+  id: ID;
+  /** 1-based page number */
+  page: number;
+  color: HighlightColor;
+  text: string;
+  /** line rectangles as fractions of the page: [x, y, w, h], each 0..1 */
+  rects: [number, number, number, number][];
+  note?: string;
+  /** the sticky on a space this quote was pinned to, if any */
+  pinned?: boolean;
+}
+
+export interface PdfData {
+  /** the file itself lives in the blob store, see lib/blobs.ts */
+  blobId: ID;
+  pages: number;
+  /** last page the reader was on, 1-based */
+  lastPage: number;
+  highlights: PdfHighlight[];
 }
 
 export type ThemePref = 'light' | 'dark' | 'system';

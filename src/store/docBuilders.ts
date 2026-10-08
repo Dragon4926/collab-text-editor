@@ -45,6 +45,7 @@ export function shortcutsDoc() {
         'Ctrl+0 — 100%, Ctrl+1 — zoom to fit, Ctrl+Plus / Ctrl+Minus — zoom',
         'Ctrl+A select all · Ctrl+D duplicate · Delete remove',
         'V select · H hand · N note · T text · F frame · S sketch',
+        'Spaces: arrows nudge (Shift = grid step) · Alt+drag places without snapping · ] / [ bring front / send back · Ctrl+2 zoom to selection · Ctrl+C / Ctrl+V copy cards',
         'Whiteboard: P pen · E eraser · R O D shapes · A arrow · T text',
       ]),
       h(2, 'Ink'),

@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { nanoid } from 'nanoid';
 import { idbStorage } from './idbStorage';
 import { shortcutsDoc } from './docBuilders';
+import { loadSurfaceFor, withViewTransition } from '@/lib/viewTransition';
 import type {
   BoardData,
   ID,
@@ -75,6 +76,7 @@ const untitled: Record<PageKind, string> = {
   space: 'Untitled space',
   board: 'Untitled board',
   notebook: 'Untitled notebook',
+  pdf: 'Untitled PDF',
 };
 
 /** collect a page and all of its descendants */
@@ -139,7 +141,12 @@ export const useWorkspace = create<WorkspaceState>()(
           p.updatedAt = Date.now();
         }),
 
-      setActive: (id) => set({ activeId: id }),
+      // switching pages cross-fades with a blur (see lib/viewTransition.ts)
+      setActive: (id) => {
+        if (get().activeId === id) return;
+        const kind = id ? get().pages[id]?.kind : undefined;
+        withViewTransition('page', () => set({ activeId: id }), () => loadSurfaceFor(kind));
+      },
 
       toggleExpanded: (id, open) =>
         set((s) => {
