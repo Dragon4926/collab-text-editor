@@ -56,11 +56,12 @@ export function InkSurface({ strokes, commit, width, height, className = '', rea
       >
         <InkDefs id={filterId} />
         {underlay}
-        <InkLayer strokes={strokes} selected={ink.selected} filterId={filterId} />
+        <InkLayer strokes={ink.strokes} selected={ink.selected} filterId={filterId} />
         {ink.live && <StrokePath stroke={ink.live} complete={false} filterId={filterId} />}
         {ink.lasso && <path className="ink-lasso" d={`M${ink.lasso.map((p) => p.join(',')).join(' L')}`} />}
         {box && <rect className="ink-selection" x={box.x} y={box.y} width={box.w} height={box.h} rx={6} />}
-        {ink.eraserAt && ink.mode === 'erase' && <circle className="ink-eraser" cx={ink.eraserAt[0]} cy={ink.eraserAt[1]} r={8} />}
+        {/* positioned imperatively by useInkCapture, so hovering costs no renders */}
+        {ink.mode === 'erase' && <circle ref={ink.eraserRef} className="ink-eraser" r={8} style={{ visibility: 'hidden' }} />}
       </svg>
 
       <AnimatePresence>

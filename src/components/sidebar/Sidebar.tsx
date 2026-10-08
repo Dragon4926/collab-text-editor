@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import {
   ChevronRight,
+  FilePlus2,
   FileText,
   Monitor,
   Moon,
@@ -27,6 +28,9 @@ import { PageIcon } from '@/components/ui/PageIcon';
 import { spring, withFocus } from '@/lib/motion';
 import { changeTheme } from '@/lib/theme';
 import { PageTree } from './PageTree';
+import { pickPdfs } from '@/lib/pdf';
+import { addPdfFile } from '@/features/pdf/pdfActions';
+import { toast } from '@/components/ui/Toast';
 import './Sidebar.css';
 
 export function Sidebar() {
@@ -43,10 +47,24 @@ export function Sidebar() {
     { label: 'Spatial space', icon: <Orbit />, onSelect: () => create('space') },
     { label: 'Whiteboard', icon: <Shapes />, onSelect: () => create('board') },
     { label: 'Notebook', icon: <NotebookPen />, onSelect: () => create('notebook') },
+    'separator',
+    {
+      label: 'Import PDF…',
+      icon: <FilePlus2 />,
+      onSelect: () =>
+        pickPdfs((files) =>
+          files.forEach((f) =>
+            addPdfFile(f).then(
+              (id) => files.length === 1 && setActive(id),
+              (e: Error) => toast(e.message || 'Couldn’t read that PDF', 'error'),
+            ),
+          ),
+        ),
+    },
   ];
 
   return (
-    <nav className="sidebar" aria-label="Workspace">
+    <nav className="app-sidebar" aria-label="Workspace">
       <header className="sidebar__top">
         <TrafficLights />
         <IconButton label="Hide sidebar" size="sm" onClick={() => setSidebarOpen(false)}>

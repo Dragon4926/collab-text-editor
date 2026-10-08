@@ -11,8 +11,8 @@
 
 :root {
   /* ---------- Typography ---------- */
-  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable', 'Helvetica Neue', sans-serif;
-  --font-display: 'Instrument Serif', 'New York', Georgia, serif;
+  --font-ui: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-ui);
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
 
   --text-xs: 11px;
@@ -25,7 +25,7 @@
   --text-display: 46px;
 
   /* ---------- Colour: surfaces ---------- */
-  --c-desktop: #e9e7f4;          /* behind the window, tinted by the aurora */
+  --c-desktop: #e9e7f4;          /* behind everything; never meant to be seen */
   --c-canvas: #f5f5f7;           /* app background, spatial canvas */
   --c-paper: #fbfbfd;            /* where content lives */
   --c-paper-raised: #ffffff;     /* cards, popovers */
@@ -34,7 +34,11 @@
   /* glass = translucent chrome; pair with backdrop-filter */
   --c-glass: rgba(246, 245, 251, 0.72);
   --c-glass-strong: rgba(255, 255, 255, 0.86);
-  --c-sidebar: rgba(236, 234, 245, 0.78);
+  /* the sidebar is opaque; the aurora tints are painted on top of it */
+  --c-sidebar: #eeecf6;
+  --aurora-a: rgba(169, 156, 255, 0.32);
+  --aurora-b: rgba(255, 179, 209, 0.26);
+  --aurora-c: rgba(159, 227, 255, 0.22);
 
   /* ---------- Colour: text ---------- */
   --c-text: #1d1d1f;
@@ -63,6 +67,7 @@
   --c-warning: #f76b15;
   --c-success: #30a46c;
   --c-highlight: rgba(255, 197, 61, 0.45);
+  --c-guide: #ec4899; /* smart guides on canvases */
 
   /* ---------- Pen palette (Samsung Notes-inspired) ---------- */
   --ink-black: #1d1d1f;
@@ -128,7 +133,10 @@
 
   --c-glass: rgba(36, 35, 42, 0.7);
   --c-glass-strong: rgba(44, 43, 50, 0.86);
-  --c-sidebar: rgba(30, 29, 36, 0.78);
+  --c-sidebar: #1c1b22;
+  --aurora-a: rgba(139, 125, 255, 0.16);
+  --aurora-b: rgba(255, 140, 190, 0.08);
+  --aurora-c: rgba(110, 200, 255, 0.08);
 
   --c-text: #f5f5f7;
   --c-text-2: #d1d1d6;

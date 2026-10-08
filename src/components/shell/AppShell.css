@@ -6,19 +6,34 @@
   padding: 0;
 }
 
-/* ---------- Sidebar: frosted glass ---------- */
+/* ---------- Sidebar: aurora-tinted, and opaque ----------
+ * The sidebar used to be translucent glass over a full-window aurora layer.
+ * Chromium skips painting whatever sits under an opaque full-window layer,
+ * so when the GPU dropped that layer (memory pressure, or while the sidebar
+ * animated) nothing was left underneath and the browser's own window colour
+ * showed through: a black sidebar, or one that flickered.
+ *
+ * Now the sidebar paints its own solid colour, with the aurora drawn as
+ * gradients on top. It depends on no other layer, so it can't go missing.
+ * The gradients live on the inner box, which keeps a fixed width while the
+ * outer panel's width animates, so they don't stretch as it opens.
+ */
 .shell__sidebar {
   flex-shrink: 0;
   overflow: hidden;
+  contain: layout paint;
   background: var(--c-sidebar);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   border-right: 1px solid var(--c-line);
 }
 
 .shell__sidebar-inner {
   width: var(--sidebar-w);
   height: 100%;
+  background:
+    radial-gradient(420px 380px at -10% -5%, var(--aurora-a), transparent 70%),
+    radial-gradient(380px 420px at 20% 108%, var(--aurora-b), transparent 70%),
+    radial-gradient(300px 340px at 115% 30%, var(--aurora-c), transparent 70%),
+    var(--c-sidebar);
 }
 
 /* ---------- Content: opaque paper ---------- */
@@ -29,6 +44,8 @@
   display: flex;
   flex-direction: column;
   background: var(--c-paper);
+  /* page switches cross-fade this region (see global.css) */
+  view-transition-name: page;
 }
 
 /* On narrow screens the sidebar overlays the content like a sheet. */

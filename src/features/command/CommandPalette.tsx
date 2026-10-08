@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArchiveRestore, CornerDownLeft, FileText, Home, HardDriveDownload, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
+import { ArchiveRestore, CornerDownLeft, FilePlus2, FileText, Home, HardDriveDownload, Moon, NotebookPen, Orbit, PanelLeft, Search, Shapes, Sun } from 'lucide-react';
 import { exportBackup, pickBackup } from '@/lib/export/backup';
+import { pickPdfs } from '@/lib/pdf';
+import { addPdfFile } from '@/features/pdf/pdfActions';
 import { toggleTheme } from '@/lib/theme';
 import { toast } from '@/components/ui/Toast';
 import { displayTitle, useWorkspace } from '@/store/workspace';
@@ -86,6 +88,21 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       { id: 'new-space', title: 'New spatial space', icon: <Orbit width={16} height={16} />, run: create('space') },
       { id: 'new-board', title: 'New whiteboard', icon: <Shapes width={16} height={16} />, run: create('board') },
       { id: 'new-notebook', title: 'New notebook', icon: <NotebookPen width={16} height={16} />, run: create('notebook') },
+      {
+        id: 'import-pdf',
+        title: 'Import PDF…',
+        subtitle: 'Read and highlight in Lumen',
+        icon: <FilePlus2 width={16} height={16} />,
+        run: () =>
+          pickPdfs((files) =>
+            files.forEach((f) =>
+              addPdfFile(f).then(
+                (id) => files.length === 1 && s.setActive(id),
+                (e: Error) => toast(e.message || 'Couldn’t read that PDF', 'error'),
+              ),
+            ),
+          ),
+      },
       { id: 'home', title: 'Go home', icon: <Home width={16} height={16} />, run: () => s.setActive(null) },
       { id: 'sidebar', title: 'Toggle sidebar', subtitle: 'Ctrl+\\', icon: <PanelLeft width={16} height={16} />, run: () => s.setSidebarOpen(!s.sidebarOpen) },
       { id: 'backup', title: 'Export workspace backup', subtitle: 'All pages as one JSON file', icon: <HardDriveDownload width={16} height={16} />, run: exportBackup },

@@ -5,6 +5,7 @@ import type { Stroke } from '@/store/types';
 import { InkSurface } from '@/features/ink/InkSurface';
 import { InkToolbar } from '@/features/ink/InkToolbar';
 import { useInkDocument } from '@/features/ink/useInkDocument';
+import { sanitizeStrokes } from '@/lib/sanitize';
 
 /**
  * A handwriting block inside a document — the Samsung Notes trick of mixing
@@ -88,12 +89,19 @@ export const SketchBlock = Node.create({
     return {
       strokes: {
         default: [],
-        parseHTML: (el) => JSON.parse(el.getAttribute('data-strokes') ?? '[]'),
+        // pasted HTML is untrusted: malformed JSON or bad points must not break the paste
+        parseHTML: (el) => {
+          try {
+            return sanitizeStrokes(JSON.parse(el.getAttribute('data-strokes') ?? '[]'));
+          } catch {
+            return [];
+          }
+        },
         renderHTML: (attrs) => ({ 'data-strokes': JSON.stringify(attrs.strokes) }),
       },
       height: {
         default: 280,
-        parseHTML: (el) => Number(el.getAttribute('data-height') ?? 280),
+        parseHTML: (el) => Math.min(4000, Math.max(160, Number(el.getAttribute('data-height')) || 280)),
         renderHTML: (attrs) => ({ 'data-height': attrs.height }),
       },
     };

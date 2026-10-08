@@ -24,7 +24,7 @@ Lumen combines four ways of thinking in one local-first app:
 
 ## Highlights
 
-- **Mac-native feel** — frosted-glass sidebar over a drifting aurora, traffic-light window controls, SF typography, springy motion and a full dark mode ("graphite glass").
+- **Mac-native feel** — tinted-glass sidebar over a soft aurora, traffic-light window controls, SF typography, springy motion and a full dark mode ("graphite glass").
 - **Blur-into-focus motion** — menus, popovers, pages and toasts materialise from a soft blur the way macOS and iOS do; light/dark cross-fades through a blurred view transition.
 - **Block editor** — `/` slash menu, Markdown shortcuts, floating formatting HUD, highlights in five colours, callouts, syntax-highlighted code, task lists, images (paste/drop), live sub-page links.
 - **Ink everywhere** — fountain pen, ballpoint, pencil (with grain), marker and highlighter; per-pen colour and size memory; stroke eraser; lasso to move, recolour and duplicate; **draw-and-hold** to snap to a perfect line, rectangle or ellipse; palm rejection once a stylus is detected.
@@ -69,7 +69,7 @@ src/
   lib/                    framework-free helpers (motion presets, text, images, export)
   hooks/                  reusable hooks (theme, history, shortcuts…)
   components/
-    shell/                window chrome: aurora, sidebar frame, titlebar, traffic lights
+    shell/                window chrome: sidebar frame, titlebar, traffic lights
     sidebar/              page tree, favourites, trash
     ui/                   primitives: IconButton, Menu, Popover, Toast, Kbd, PageIcon
   features/

@@ -29,7 +29,7 @@ differs, and only the matching surface reads it.
 
 ```
 ┌───────────────────────────────────────────────────────────┐
-│ components/shell   window chrome (aurora, sidebar frame,   │
+│ components/shell   window chrome (sidebar frame,          │
 │                    titlebar, traffic lights)               │
 ├───────────────────────────────────────────────────────────┤
 │ features/*         one folder per feature: home, page,     │

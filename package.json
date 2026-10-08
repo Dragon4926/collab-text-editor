@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@tiptap/extension-code-block-lowlight": "^3.31.4",
     "@tiptap/extension-highlight": "^3.31.4",
     "@tiptap/extension-image": "^3.31.4",
@@ -27,6 +29,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^1.52.0",
     "nanoid": "^6.0.2",
+    "pdfjs-dist": "^6.4.299",
     "perfect-freehand": "^1.2.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

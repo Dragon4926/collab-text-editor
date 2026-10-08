@@ -48,7 +48,7 @@ browser devtools.
 |---|---|---|---|
 | Typography | `--font-*`, `--text-*` | `--font-ui`, `--text-body` | System SF stack for UI; *Instrument Serif* only for page titles; *JetBrains Mono* for code |
 | Surfaces | `--c-desktop`, `--c-canvas`, `--c-paper` … | | Ordered from "far away" to "close to you" |
-| Glass | `--c-glass`, `--c-sidebar`, `--blur` | | Always paired with `backdrop-filter: var(--blur)` |
+| Glass | `--c-glass`, `--c-sidebar`, `--blur` | | `--c-glass` is paired with `backdrop-filter: var(--blur)`; the sidebar is a plain translucent fill (see below) |
 | Text | `--c-text` … `--c-text-4` | | Four steps of emphasis, like Apple's label colours |
 | Lines & fills | `--c-line`, `--c-fill-*` | | Translucent black/white so they work on any surface |
 | Accent | `--c-accent*` | `--c-accent-soft` | "Iris" violet-blue |
@@ -75,6 +75,13 @@ backdrop-filter: var(--blur);        /* saturate(180%) blur(24px) */
 `saturate()` matters as much as `blur()`: blurring alone makes the background
 look muddy; boosting saturation keeps the colours behind the glass vivid,
 which is what makes macOS vibrancy feel "lit".
+
+Backdrop blur is for *small, floating* panes. The full-height sidebar sits
+over the drifting aurora, so a backdrop filter there would be recomputed
+every frame, and under GPU memory pressure Chromium drops such layers,
+letting the browser's window colour show through. The sidebar uses a plain
+translucent `--c-sidebar` fill instead. The aurora is soft already, so it
+looks the same.
 
 Floating glass (toolbars, menus, popovers, the palette) adds one more token:
 

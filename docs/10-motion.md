@@ -5,10 +5,10 @@
 Things *come into focus*: menus, popovers, the palette, toasts and new cards
 fade in from a soft blur, and defocus as they leave. Pages cross-fade — one
 blurring away while the next sharpens. Switching light/dark dissolves the
-whole window through a blur. The sidebar glides and defocuses as it folds,
+whole window through a blur. The sidebar glides open and its contents fade,
 the selected tool's highlight slides between buttons, pens
-rise out of the pen case, the favourite star bounces, checkboxes pop, toasts
-spring up, and the aurora behind the glass drifts slowly forever.
+rise out of the pen case, the favourite star bounces, checkboxes pop and toasts
+spring up.
 
 ## Concepts
 
@@ -74,17 +74,29 @@ keyframe there, because TipTap mounts that element itself).
 The palette also animates `backdropFilter` on its scrim, so the whole app
 behind it softly defocuses — Spotlight's trick.
 
-### Overlapping page transitions
+### Page switches and theme changes: the View Transitions API
 
-`PageView` keys each page by id inside
-`<AnimatePresence mode="popLayout">`. "popLayout" pops the outgoing page out
-of the layout (absolutely positioned where it was) so the incoming page can
-animate **at the same time**. One defocuses and drifts back while the other
-sharpens into place: a true cross-fade, in roughly half the time of
-fade-out-then-fade-in. The exiting page gets `pointerEvents: 'none'` so it
-can't swallow clicks meant for the new one.
+Both page switches and theme changes go through `withViewTransition()` in
+`src/lib/viewTransition.ts`.
 
-### Theme changes: the View Transitions API
+Page switches used to be animated in React with framer-motion. That fell
+apart on heavy pages: mounting an editor, a canvas or a PDF reader blocks the
+main thread for 100–200 ms at exactly the moment the fade should start, so
+the first half of it never reached the screen. A view transition animates
+*snapshots* on the compositor instead, so nothing the new page does while it
+settles in can drop a frame.
+
+The main area has `view-transition-name: page`, so only it cross-fades: the
+old page drifts back and defocuses (`page-out`) while the new one sharpens
+into place (`page-in`), overlapping, as one optical motion. The sidebar
+just swaps its highlighted row. `<html data-vt="page">` or `"theme"` is set
+for the duration, so `global.css` can give each kind its own choreography.
+
+Before the "after" snapshot, the transition waits for the next surface's
+code (`registerSurfaceLoader` in `PageView`). Otherwise the first visit to a
+canvas would cross-fade into a loading spinner.
+
+#### Theme changes
 
 Switching theme changes dozens of CSS variables in one go. Animating each
 colour with CSS transitions looked muddy: some elements changed instantly,
@@ -115,8 +127,8 @@ React removes elements immediately, so there's nothing to animate *out*.
 `AnimatePresence` keeps a removed child mounted until its `exit` animation
 finishes. Its `mode` decides how old and new overlap: `"sync"` (default) runs
 both at once in normal layout, `"wait"` finishes the exit before the enter
-starts, and `"popLayout"` (used by `PageView`, above) overlaps them with the
-outgoing element taken out of the layout.
+starts, and `"popLayout"` overlaps them with the outgoing element taken out
+of the layout.
 
 ### Shared layout animations
 
@@ -134,14 +146,20 @@ A parent with `staggerChildren` delays each child's animation slightly
 (`stagger()` in `motion.ts`). The home screen uses it so the greeting, cards
 and recents arrive in a gentle cascade rather than all at once.
 
-### Ambient motion that costs nothing
+### When *not* to animate
 
-The aurora (`components/shell/Aurora.tsx`) is three large blurred gradients
-animated with CSS keyframes that only change `transform`. Transforms are
-handled by the GPU compositor — no layout, no paint — so the effect runs at
-full frame rate with negligible CPU. The three animations have durations of
-38 s, 47 s and 53 s; because they share no common factor, the combined
-pattern takes minutes to repeat and never feels like a loop.
+The aurora behind the sidebar (`components/shell/Aurora.tsx`) used to be
+three `blur(80px)` blobs drifting forever, seen through the sidebar's
+`backdrop-filter`. "Only `transform`" sounds free, but a translucent
+`backdrop-filter` over a moving backdrop must be re-blurred every frame. On
+many Windows GPUs that flickered — and when the huge blurred layers didn't
+fit in tile memory, the browser's own window colour showed through and the
+sidebar went black. The aurora is now three static gradients painted
+*inside* the opaque sidebar (`AppShell.css`) — no separate layer to lose.
+
+The same lesson shaped the sidebar's open/close: only its `width` springs,
+and only the *contents* fade. Animating `filter` on the panel itself put it on
+a fresh compositing layer every frame of the spring, which flickered.
 
 ### Respecting the user
 
@@ -165,6 +183,6 @@ should delight, never disorient.
 
 1. Make the sidebar's tree rows animate their reordering when you drag one
    (hint: `layout` is already on the rows — try dropping and watch).
-2. Add a subtle parallax: move the aurora a few pixels opposite to the canvas
-   camera.
+2. Measure it: record the sidebar toggling in DevTools → Performance with
+   *Rendering → Paint flashing* on, before and after adding a `filter`.
 3. Tweak `spring.snappy` and feel the difference in the command palette.

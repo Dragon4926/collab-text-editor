@@ -5,11 +5,16 @@ while you type, draw and pan.
 
 ## Load less: code splitting
 
-`src/features/page/PageView.tsx` loads each surface with `React.lazy`:
+`src/features/page/PageView.tsx` loads each surface with a dynamic import:
 
 ```ts
-const DocPage = lazy(() => import('@/features/doc/DocPage').then((m) => ({ default: m.DocPage })));
+doc: () => import('@/features/doc/DocPage').then((m) => m.DocPage),
 ```
+
+Loaded surfaces are cached in a plain object, so after the first load a
+surface renders synchronously. `React.lazy` would suspend for a tick on its
+first render even when the code is already there, and the page transition
+would capture the spinner.
 
 Vite turns every dynamic `import()` into a separate file. The editor (TipTap,
 ProseMirror and syntax highlighting — the heaviest dependencies) downloads
@@ -67,16 +72,63 @@ is shared with the previous state. That's why:
 * Canvases move a single world layer with `transform` — the browser's
   compositor does the work, nothing re-lays out.
 * The dot grid is a CSS background (no elements).
-* The aurora animates only `transform` on blurred layers that never repaint.
+* The aurora is static gradients painted inside the opaque sidebar — no
+  full-window layer, no `backdrop-filter`. A translucent blur over an
+  animated backdrop has to be recomposited every frame; on Windows GPUs it
+  flickered, and when the layer was dropped the sidebar went black
+  (chapter 10).
 * Blur transitions end by removing `filter` entirely, so finished elements
   drop their extra compositing layer.
 * `will-change: transform` hints the browser to keep those layers on the GPU.
+
+## Gesture less: preview locally, commit once
+
+* **Eraser and lasso-move** keep the working strokes in local state, repaint
+  at most once per animation frame, and write to the store *once* on
+  pointer-up. Before, every hit was a store update — and in a document's
+  sketch block a whole ProseMirror transaction — several times per
+  pointermove.
+* **Bounding boxes first.** Each stroke's bounds are cached in a `WeakMap`
+  keyed by the (immutable) stroke, so the eraser rejects almost every stroke
+  with four comparisons before any per-segment maths.
+* **Cursors outside React.** The eraser circle is moved by setting its
+  `cx`/`cy` attributes directly; hovering re-renders nothing.
+* **Canvas drags** write card positions once per frame (`requestAnimationFrame`),
+  not once per pointer event, and only cards created while a space is open
+  play the entrance animation — opening a big space no longer blurs and
+  scales every card at once.
 
 ## Store less: images and blobs
 
 * Imported images are downscaled to ≤1600 px WebP before storage.
 * Audio is stored as native Blobs in a separate IndexedDB store, out of the
   workspace object that gets cloned on every save.
+
+## Draw less: PDF pages
+
+A scanned book is hundreds of full-page images. `PdfPageView`
+(`src/features/pdf/`) keeps that affordable:
+
+* **Only near pages exist.** An `IntersectionObserver` draws a page as it
+  comes within ~1200 px of the view and frees its canvas once it leaves.
+  Without that, scrolling a 300-page book at 2× resolution would hold
+  gigabytes of canvases until the browser gave up and drew blank pages.
+* **A render queue.** At most two pages draw at once, and the reading
+  column (priority 0) goes ahead of thumbnails (priority 1), so a fast scroll
+  doesn't starve the page you stopped on.
+* **Off-screen, then swap.** Each render draws into a new canvas and replaces
+  the old one when it's finished. Turning a page or zooming never flashes
+  white, and two renders never fight over one canvas.
+* **Resolution in steps.** On the spatial canvas, a PDF card redraws at 2×
+  detail only when the camera zoom crosses a threshold, never on every
+  zoom frame.
+
+## Load less from elsewhere: bundled fonts
+
+Inter and JetBrains Mono ship with the app (`@fontsource/*`)
+instead of coming from a font CDN: no render-blocking third-party stylesheet,
+no extra DNS + TLS handshakes, and they work offline. Each font is split by
+Unicode range, so only the Latin files download for English text.
 
 ## Measure, don't guess
 

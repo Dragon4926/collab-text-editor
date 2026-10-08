@@ -12,7 +12,7 @@ import { cameraStyles, useCamera } from '@/features/canvas/useCamera';
 import { ZoomControls } from '@/features/canvas/ZoomControls';
 import { InkDefs, StrokePath, inkFill } from '@/features/ink/InkLayer';
 import { INK_COLORS, PENS, PEN_ORDER } from '@/features/ink/pens';
-import { unionBounds } from '@/features/ink/geometry';
+import { sweepHitsStroke, unionBounds } from '@/features/ink/geometry';
 import { useInkTool } from '@/features/ink/toolStore';
 import { TEXT_LINE, boxesIntersect, diamondPath, elementBounds, hitElement, normaliseShape, translateElement } from './boardModel';
 import '@/features/canvas/canvas.css';
@@ -38,6 +38,8 @@ interface Gesture {
   before: BoardElement[];
   changed: boolean;
   points?: InkPoint[];
+  /** eraser: the previous sample, so each move erases along the swept path */
+  last?: [number, number];
   origin?: BoardElement[];
   end?: 1 | 2;
 }
@@ -67,7 +69,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<BoardElement | null>(null);
   const [marquee, setMarquee] = useState<[number, number, number, number] | null>(null);
-  const [eraserAt, setEraserAt] = useState<[number, number] | null>(null);
+  const eraserRef = useRef<SVGCircleElement>(null);
   const gesture = useRef<Gesture | null>(null);
   const history = useHistory<BoardElement[]>();
 
@@ -109,8 +111,8 @@ export function BoardPage({ pageId }: { pageId: ID }) {
       return;
     }
     if (tool === 'eraser') {
-      gesture.current = { kind: 'erase', start: [x, y], before, changed: false };
-      eraseAt(x, y);
+      gesture.current = { kind: 'erase', start: [x, y], before, changed: false, last: [x, y] };
+      eraseAlong([[x, y]]);
       return;
     }
     if (tool === 'rect' || tool === 'ellipse' || tool === 'diamond') {
@@ -159,10 +161,21 @@ export function BoardPage({ pageId }: { pageId: ID }) {
     setMarquee([x, y, x, y]);
   };
 
-  const eraseAt = (x: number, y: number) => {
+  /**
+   * Erase along the path through `samples` (the move's coalesced events).
+   * Strokes are tested against the swept segment so a fast swipe can't skip
+   * them; everything is filtered first and written once per pointermove.
+   */
+  const eraseAlong = (samples: [number, number][]) => {
     const g = gesture.current!;
     const now = current();
-    const next = now.filter((el) => !hitElement(el, x, y, 6 / z));
+    const tol = 6 / z;
+    let next = now;
+    for (const [x, y] of samples) {
+      const [lx, ly] = g.last ?? [x, y];
+      g.last = [x, y];
+      next = next.filter((el) => !(el.type === 'stroke' ? sweepHitsStroke(el.stroke, lx, ly, x, y, tol) : hitElement(el, x, y, tol)));
+    }
     if (next.length !== now.length) {
       if (!g.changed) history.record(g.before);
       g.changed = true;
@@ -173,7 +186,12 @@ export function BoardPage({ pageId }: { pageId: ID }) {
   const onPointerMove = (e: React.PointerEvent) => {
     if (cam.handlePointerMove(e)) return;
     const [x, y] = cam.toWorld(e);
-    if (tool === 'eraser') setEraserAt([x, y]);
+    if (tool === 'eraser' && eraserRef.current) {
+      // moved imperatively: hovering with the eraser shouldn't re-render the board
+      eraserRef.current.setAttribute('cx', String(x));
+      eraserRef.current.setAttribute('cy', String(y));
+      eraserRef.current.style.visibility = 'visible';
+    }
     const g = gesture.current;
     if (!g) return;
     const dx = x - g.start[0];
@@ -190,9 +208,12 @@ export function BoardPage({ pageId }: { pageId: ID }) {
         setDraft((d) => (d?.type === 'stroke' ? { ...d, stroke: { ...d.stroke, points: g.points!.slice() } } : d));
         break;
       }
-      case 'erase':
-        eraseAt(x, y);
+      case 'erase': {
+        const native = e.nativeEvent as PointerEvent;
+        const evs = native.getCoalescedEvents?.() ?? [];
+        eraseAlong(evs.length ? evs.map((ev) => cam.toWorld(ev)) : [[x, y]]);
         break;
+      }
       case 'shape':
         setDraft((d) => {
           if (d?.type === 'shape') {
@@ -332,7 +353,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onPointerLeave={() => setEraserAt(null)}
+        onPointerLeave={() => eraserRef.current && (eraserRef.current.style.visibility = 'hidden')}
         onDoubleClick={(e) => {
           // Pointer capture retargets click events to the viewport, so we hit
           // test geometrically instead of reading event.target. Search from the
@@ -375,7 +396,7 @@ export function BoardPage({ pageId }: { pageId: ID }) {
               </g>
             )}
             {marquee && <rect className="board__marquee" x={Math.min(marquee[0], marquee[2])} y={Math.min(marquee[1], marquee[3])} width={Math.abs(marquee[2] - marquee[0])} height={Math.abs(marquee[3] - marquee[1])} strokeWidth={1 / z} />}
-            {eraserAt && tool === 'eraser' && <circle className="ink-eraser" cx={eraserAt[0]} cy={eraserAt[1]} r={6 / z} />}
+            {tool === 'eraser' && <circle ref={eraserRef} className="ink-eraser" r={6 / z} style={{ visibility: 'hidden' }} />}
           </svg>
 
           {editingEl && (editingEl.type === 'text' || editingEl.type === 'shape') && (

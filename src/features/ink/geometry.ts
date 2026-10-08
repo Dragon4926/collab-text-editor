@@ -79,25 +79,73 @@ export function unionBounds(boxes: Box[]): Box | null {
   return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
 }
 
-/** Shortest distance from point p to segment ab. */
-export function distToSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+/**
+ * Bounds per stroke object, computed once. Strokes are immutable — an edit
+ * produces a new object — so a WeakMap keyed by the stroke can never go
+ * stale, and entries disappear with the strokes they describe.
+ */
+const boundsCache = new WeakMap<Stroke, Box>();
+export function cachedBounds(stroke: Stroke): Box {
+  let b = boundsCache.get(stroke);
+  if (!b) boundsCache.set(stroke, (b = strokeBounds(stroke.points)));
+  return b;
+}
+
+/** Squared distance from point p to segment ab (no square root needed to compare). */
+function distToSegment2(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
   const dx = bx - ax;
   const dy = by - ay;
   const len2 = dx * dx + dy * dy;
   let t = len2 === 0 ? 0 : ((px - ax) * dx + (py - ay) * dy) / len2;
-  t = Math.max(0, Math.min(1, t));
-  const cx = ax + t * dx;
-  const cy = ay + t * dy;
-  return Math.hypot(px - cx, py - cy);
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const ex = px - (ax + t * dx);
+  const ey = py - (ay + t * dy);
+  return ex * ex + ey * ey;
+}
+
+/** Shortest distance from point p to segment ab. */
+export function distToSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  return Math.sqrt(distToSegment2(px, py, ax, ay, bx, by));
+}
+
+const cross = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+
+/**
+ * Squared distance between segments pq and ab. Zero if they cross;
+ * otherwise the closest pair always involves one of the four endpoints.
+ */
+function segDist2(px: number, py: number, qx: number, qy: number, ax: number, ay: number, bx: number, by: number): number {
+  const d1 = cross(px, py, qx, qy, ax, ay);
+  const d2 = cross(px, py, qx, qy, bx, by);
+  const d3 = cross(ax, ay, bx, by, px, py);
+  const d4 = cross(ax, ay, bx, by, qx, qy);
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return 0;
+  return Math.min(distToSegment2(px, py, ax, ay, bx, by), distToSegment2(qx, qy, ax, ay, bx, by), distToSegment2(ax, ay, px, py, qx, qy), distToSegment2(bx, by, px, py, qx, qy));
 }
 
 /** Does the eraser circle at (x, y) touch this stroke? */
 export function hitStroke(stroke: Stroke, x: number, y: number, radius: number): boolean {
+  return sweepHitsStroke(stroke, x, y, x, y, radius);
+}
+
+/**
+ * Does an eraser of `radius`, swept from (ax, ay) to (bx, by), touch this
+ * stroke? Testing the *path* between two pointer samples rather than just
+ * the samples means a fast swipe can't skip over a thin line.
+ *
+ * A bounding-box check rejects almost every stroke before any per-segment
+ * maths runs, which is what keeps erasing smooth on pages with thousands of
+ * strokes.
+ */
+export function sweepHitsStroke(stroke: Stroke, ax: number, ay: number, bx: number, by: number, radius: number): boolean {
   const r = radius + (stroke.size * PENS[stroke.pen].sizeScale) / 1.5;
+  const box = cachedBounds(stroke);
+  if (Math.max(ax, bx) < box.x - r || Math.min(ax, bx) > box.x + box.w + r || Math.max(ay, by) < box.y - r || Math.min(ay, by) > box.y + box.h + r) return false;
+  const r2 = r * r;
   const pts = stroke.points;
-  if (pts.length === 1) return Math.hypot(pts[0][0] - x, pts[0][1] - y) <= r;
+  if (pts.length === 1) return distToSegment2(pts[0][0], pts[0][1], ax, ay, bx, by) <= r2;
   for (let i = 1; i < pts.length; i++) {
-    if (distToSegment(x, y, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]) <= r) return true;
+    if (segDist2(ax, ay, bx, by, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]) <= r2) return true;
   }
   return false;
 }

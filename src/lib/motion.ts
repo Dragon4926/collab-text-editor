@@ -49,18 +49,6 @@ export const popIn: Variants = {
   exit: { opacity: 0, scale: 0.97, y: -3, filter: 'blur(6px)', transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } },
 };
 
-/**
- * Page-level crossfade. The outgoing page drifts back and defocuses while
- * the incoming one sharpens into place — the two overlap (see PageView),
- * which is what makes it read as one continuous motion.
- */
-export const pageFade: Variants = {
-  initial: { opacity: 0, scale: 1.012, filter: 'blur(10px)' },
-  animate: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] }, transitionEnd: SHARP },
-  // the outgoing page must not swallow clicks meant for the new one
-  exit: { opacity: 0, scale: 0.99, filter: 'blur(8px)', pointerEvents: 'none', transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } },
-};
-
 /** Parent variant that staggers its children's entrance. */
 export const stagger = (delay = 0.035): Variants => ({
   animate: { transition: { staggerChildren: delay } },

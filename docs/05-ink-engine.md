@@ -102,6 +102,22 @@ distance = |p − closest|
 
 If any segment is closer than `radius + strokeWidth/2`, the stroke is hit.
 
+Two refinements make it fast and reliable:
+
+* **Swept erasing.** A fast swipe can move 40 px between two pointer
+  samples — farther than a thin line is wide. So instead of testing only the
+  sample points, we test the *segment* from the previous sample to the
+  current one against each stroke segment (segment-to-segment distance: zero
+  if they cross, otherwise the closest of the four endpoint-to-segment
+  distances).
+* **Bounding boxes first.** Each stroke's bounds are cached in a `WeakMap`
+  (`cachedBounds`). Strokes are immutable, so the cache can't go stale. A
+  quick box check skips nearly every stroke before any per-segment work, and
+  comparisons use *squared* distances to avoid square roots.
+
+While a swipe is in progress the surviving strokes are shown from local
+state and committed once on pointer-up (see §7).
+
 ### 6. The lasso: ray casting
 
 Is a point inside an arbitrary loop? Shoot a ray to the right and count how
@@ -120,7 +136,10 @@ A stroke is selected when more than 60% of its points are inside the lasso
 ### 7. One gesture, one undo step
 
 An eraser swipe may remove ten strokes over 200 pointer moves. We want *one*
-Ctrl+Z to bring them all back. `useInkCapture` calls `commit(next, before)` where
+Ctrl+Z to bring them all back — and we don't want 200 writes either: for a
+sketch block each write is a ProseMirror transaction. So erase and lasso-move
+gestures keep their working strokes in a local `preview`, repaint at most
+once per animation frame, and commit once on pointer-up. `useInkCapture` calls `commit(next, before)` where
 `before` is the state at the start of the gesture; `useInkDocument` records
 `before` in history only the first time it sees that reference.
 
